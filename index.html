@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="롯데호텔 구매팀 시장동향 대시보드 — 환율·유가·물류·원자재·식자재 실시간 모니터링">
-  <title>구매팀 시장동향 대시보드 | 롯데호텔</title>
+  <meta name="description" content="롯데호텔 구매팀 시장동향 슈퍼 대시보드 — 환율·유가·물류·원자재·식자재 실시간 모니터링">
+  <title>구매팀 시장동향 슈퍼 대시보드 | 롯데호텔</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -344,9 +344,6 @@
     .impact-up { color: var(--danger); font-weight: 600; }
     .impact-down { color: var(--success); font-weight: 600; }
     .impact-flat { color: var(--fg-muted); font-weight: 600; }
-    .days-urgent { color: var(--danger); font-weight: 700; }
-    .days-warn { color: var(--gold-dark); font-weight: 600; }
-    .days-ok { color: var(--success); font-weight: 500; }
     .decision-row td:first-child { white-space: nowrap; }
 
     /* ── Chart ── */
@@ -631,7 +628,7 @@
 
 <main class="container">
 
-  <div class="load-error" id="loadError">데이터를 불러오지 못했습니다. market_data.json 파일을 확인해 주세요.</div>
+  <div class="load-error" id="loadError">데이터를 불러오지 못했습니다. GitHub에 market_data.json 파일을 업로드해 주세요.</div>
 
   <div class="hero-strip">
   <section id="sec-core" class="card core-messages swiss-grid-pattern">
@@ -688,25 +685,8 @@
     </div>
   </section>
 
-  <section id="sec-contracts" class="dash-section">
-    <div class="section-label"><span class="num">01-C.</span> Contract Alerts</div>
-    <h2 class="section-heading">계약 갱신 · 만료 알림</h2>
-    <div class="section-block">
-      <div class="card">
-        <div style="overflow-x:auto;">
-          <table class="data-table" id="contractTable">
-            <thead>
-              <tr><th>상태</th><th>품목/계약</th><th>거래처</th><th>만료일</th><th>잔여일</th><th>규모</th><th>필요 조치</th></tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section id="sec-weekly" class="dash-section">
-    <div class="section-label"><span class="num">01-D.</span> This Week</div>
+    <div class="section-label"><span class="num">01-C.</span> This Week</div>
     <h2 class="section-heading">이번 주 구매 판단 체크리스트</h2>
     <div class="section-block">
       <div class="card">
@@ -913,7 +893,6 @@
 const SECTIONS = [
   { id: 'procurement', label: '구매판단' },
   { id: 'costimpact', label: '원가영향' },
-  { id: 'contracts', label: '계약알림' },
   { id: 'fx', label: '환율' },
   { id: 'oil', label: '유가' },
   { id: 'logistics', label: '물류' },
@@ -937,15 +916,32 @@ const charts = {};
 
 async function loadData() {
   document.getElementById('loadError').style.display = 'none';
+  DATA = null;
+
   try {
     const res = await fetch('market_data.json?t=' + Date.now());
-    if (!res.ok) throw new Error('fetch failed');
-    DATA = await res.json();
-  } catch (e) {
-    if (window.__MARKET_DATA__ && window.__MARKET_DATA__.coreMessages) {
-      DATA = window.__MARKET_DATA__;
-    }
+    if (res.ok) DATA = await res.json();
+  } catch (e) { /* json 없음 → 다음 방법 시도 */ }
+
+  if (!DATA?.coreMessages && window.__MARKET_DATA__?.coreMessages) {
+    DATA = window.__MARKET_DATA__;
   }
+
+  if (!DATA?.coreMessages) {
+    try {
+      const res = await fetch('market_data.js?t=' + Date.now());
+      if (res.ok) {
+        const text = await res.text();
+        if (text.trim().startsWith('{')) {
+          DATA = JSON.parse(text);
+        } else {
+          new Function(text)();
+          if (window.__MARKET_DATA__?.coreMessages) DATA = window.__MARKET_DATA__;
+        }
+      }
+    } catch (e) { /* js 로드 실패 */ }
+  }
+
   if (!DATA || !DATA.coreMessages) {
     document.getElementById('loadError').style.display = 'block';
     throw new Error('No data available');
@@ -1071,12 +1067,6 @@ function renderQuickNav() {
       .map(id => `<a href="#${id}" aria-label="${id}"></a>`).join('');
 }
 
-function daysLeftClass(days) {
-  if (days <= 45) return 'days-urgent';
-  if (days <= 90) return 'days-warn';
-  return 'days-ok';
-}
-
 function impactClass(dir) {
   if (dir === 'up') return 'impact-up';
   if (dir === 'down') return 'impact-down';
@@ -1112,20 +1102,6 @@ function renderCostImpact() {
       <td class="mono">${c.share}</td>
       <td class="${impactClass(c.direction)}">${c.impact}</td>
       <td>${c.driver}</td>
-      <td class="action-cell">${c.action}</td>
-    </tr>`).join('');
-}
-
-function renderContracts() {
-  if (!DATA.contractAlerts) return;
-  document.querySelector('#contractTable tbody').innerHTML = DATA.contractAlerts.map(c => `
-    <tr>
-      <td>${c.status}</td>
-      <td><strong>${c.item}</strong></td>
-      <td>${c.vendor}</td>
-      <td class="mono">${c.expiry}</td>
-      <td class="${daysLeftClass(c.daysLeft)}">${c.daysLeft}일</td>
-      <td>${c.value}</td>
       <td class="action-cell">${c.action}</td>
     </tr>`).join('');
 }
@@ -1290,7 +1266,6 @@ function renderAll() {
   renderStatusGrid();
   renderProcurement();
   renderCostImpact();
-  renderContracts();
   renderWeeklyDecisions();
   renderQuickNav();
   renderFx(); renderOil(); renderLogistics(); renderMaterials();
