@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="롯데호텔 구매팀 시장동향 슈퍼 대시보드 — 환율·유가·물류·원자재·식자재 실시간 모니터링">
+  <title>구매팀 시장동향 슈퍼 대시보드 | 롯데호텔</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Swiss International Design Tokens ── */
+    :root {
+      --bg: #FFFFFF;
+      --fg: #000000;
+      --muted: #F2F2F2;
+      --accent: #FF3000;
+      --border: #000000;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      font-size: 0.9375rem;
+      font-weight: 400;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      min-height: 100vh;
+      text-align: left;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.015;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .swiss-grid-pattern {
+      background-image:
+        linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .swiss-dots {
+      background-image: radial-gradient(rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    h1, h2, h3, h4, .card-title, .section-heading, .hero-title {
+      font-family: var(--font);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+    }
+
+    .mono { font-family: var(--font); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+    /* ── Header ── */
+    .header {
+      background: var(--bg);
+      border-bottom: 4px solid var(--border);
+      padding: 1.5rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 80rem;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 2rem;
+    }
+    @media (max-width: 768px) {
+      .header-inner { grid-template-columns: 1fr; }
+      .header { padding: 1rem; }
+    }
+    .logo-area .eyebrow {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .logo-area h1 {
+      font-size: clamp(1.75rem, 4vw, 3.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+    .logo-area .sub {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      margin-top: 0.75rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      padding: 0 1.25rem;
+      min-height: 48px;
+      border: 2px solid var(--border);
+      border-radius: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s ease-linear, color 0.15s ease-linear, border-color 0.15s ease-linear;
+    }
+    .btn + .btn { border-left: none; }
+    .btn:hover { background: var(--fg); color: var(--bg); }
+    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn-primary { background: var(--fg); color: var(--bg); }
+    .btn-primary:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+    /* ── Update banner ── */
+    .update-banner {
+      background: var(--muted);
+      border-bottom: 2px solid var(--border);
+      padding: 0.75rem 2rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .update-banner .live-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .countdown { color: var(--accent); font-weight: 700; }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+    .grid-2 { display: grid; grid-template-columns: 7fr 5fr; gap: 0; border: 2px solid var(--border); }
+    .grid-2 > * { border-right: 2px solid var(--border); }
+    .grid-2 > *:last-child { border-right: none; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 2px solid var(--border); }
+    .grid-3 > * { border-right: 2px solid var(--border); padding: 1.5rem; }
+    .grid-3 > *:last-child { border-right: none; }
+    @media (max-width: 900px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .grid-2 > *, .grid-3 > * { border-right: none; border-bottom: 2px solid var(--border); }
+      .grid-2 > *:last-child, .grid-3 > *:last-child { border-bottom: none; }
+      .container { padding: 2rem 1rem 4rem; }
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--bg);
+      border: none;
+      padding: 2rem;
+      transition: background 0.15s ease-linear, color 0.15s ease-linear;
+    }
+    .card.muted-bg { background: var(--muted); }
+    .card-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .card-title {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+    }
+    .card-badge {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.5rem;
+      border: 2px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-label .num { color: var(--accent); }
+
+    .section-heading {
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    /* ── Core messages ── */
+    .core-messages {
+      margin-bottom: 0;
+      border: 4px solid var(--border);
+    }
+    .core-messages blockquote {
+      padding: 1rem 0 1rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-left: 4px solid var(--accent);
+      margin: 0;
+      line-height: 1.7;
+    }
+    .core-messages blockquote + blockquote { margin-top: 0.5rem; }
+
+    /* ── Status grid ── */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0;
+      border: 2px solid var(--border);
+      margin-bottom: 0;
+    }
+    .status-item {
+      background: var(--bg);
+      border-right: 2px solid var(--border);
+      border-bottom: 2px solid var(--border);
+      padding: 1.25rem 1rem;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s ease-linear, color 0.15s ease-linear;
+    }
+    .status-item:hover {
+      background: var(--fg);
+      color: var(--bg);
+    }
+    .status-item:hover .cat, .status-item:hover .chg { opacity: 0.7; }
+    .status-item .emoji-status { font-size: 1rem; margin-bottom: 0.25rem; }
+    .status-item .emoji-cat { font-size: 1.25rem; margin-bottom: 0.35rem; }
+    .status-item .cat {
+      font-size: 0.625rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-bottom: 0.35rem;
+    }
+    .status-item .val { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+    .status-item .chg { font-size: 0.6875rem; opacity: 0.5; margin-top: 0.25rem; }
+
+    /* ── KPI ── */
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0; border: 2px solid var(--border); margin-bottom: 1.5rem; }
+    .kpi {
+      padding: 1rem;
+      text-align: left;
+      border-right: 2px solid var(--border);
+    }
+    .kpi:last-child { border-right: none; }
+    .kpi .label {
+      font-size: 0.625rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.5;
+    }
+    .kpi .value { font-size: 1.5rem; font-weight: 900; margin-top: 0.25rem; letter-spacing: -0.03em; }
+    .kpi .delta { font-size: 0.75rem; font-weight: 500; margin-top: 0.2rem; }
+    .delta.up { color: var(--accent); }
+    .delta.down { color: var(--fg); opacity: 0.6; }
+
+    /* ── Chart ── */
+    .chart-wrap {
+      position: relative;
+      height: 240px;
+      border: 2px solid var(--border);
+      padding: 1rem;
+      background: var(--muted);
+    }
+    .swiss-grid-pattern .chart-wrap { background-color: var(--muted); }
+
+    /* ── Tables ── */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+    .data-table th {
+      background: var(--fg);
+      color: var(--bg);
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.625rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 2px solid var(--border);
+    }
+    .data-table td {
+      padding: 0.65rem 1rem;
+      border: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .data-table tr:hover td { background: var(--muted); }
+
+    /* ── Analysis list ── */
+    .analysis-list { list-style: none; }
+    .analysis-list li {
+      padding: 0.75rem 0;
+      font-size: 0.875rem;
+      font-weight: 400;
+      border-bottom: 1px solid var(--border);
+      padding-left: 1rem;
+      border-left: 2px solid transparent;
+      transition: border-color 0.15s ease-linear;
+    }
+    .analysis-list li:hover { border-left-color: var(--accent); }
+    .analysis-list li:last-child { border-bottom: none; }
+
+    /* ── Quick nav ── */
+    .quick-nav {
+      display: flex;
+      gap: 0;
+      margin-bottom: 3rem;
+      overflow-x: auto;
+      border: 2px solid var(--border);
+    }
+    .quick-nav a {
+      padding: 0.75rem 1.25rem;
+      min-height: 44px;
+      border-right: 2px solid var(--border);
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 0.625rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.15s ease-linear, color 0.15s ease-linear;
+      display: flex;
+      align-items: center;
+    }
+    .quick-nav a:last-child { border-right: none; }
+    .quick-nav a:hover { background: var(--accent); color: var(--bg); }
+
+    .dash-section {
+      margin-bottom: 4rem;
+      scroll-margin-top: 5rem;
+    }
+    .dash-section .section-block {
+      border: 4px solid var(--border);
+    }
+
+    /* ── Action plan ── */
+    .plan-col h4 {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .plan-col ul { list-style: none; }
+    .plan-col li {
+      font-size: 0.8125rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      padding-left: 0;
+    }
+    .plan-col li::before { content: '— '; color: var(--accent); font-weight: 700; }
+
+    /* ── Share panel ── */
+    .share-panel { position: fixed; bottom: 2rem; right: 2rem; z-index: 200; }
+    .share-fab {
+      width: 56px; height: 56px;
+      border: 2px solid var(--border);
+      border-radius: 0;
+      background: var(--fg);
+      color: var(--bg);
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: background 0.15s ease-linear;
+    }
+    .share-fab:hover { background: var(--accent); }
+    .share-fab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .share-menu {
+      display: none;
+      position: absolute;
+      bottom: 64px;
+      right: 0;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      min-width: 220px;
+    }
+    .share-menu.open { display: block; }
+    .share-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.85rem 1rem;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      background: none;
+      color: var(--fg);
+      font-family: var(--font);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s ease-linear, color 0.15s ease-linear;
+    }
+    .share-menu button:last-child { border-bottom: none; }
+    .share-menu button:hover { background: var(--fg); color: var(--bg); }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: left;
+      padding: 3rem 2rem;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-top: 4px solid var(--border);
+      background: var(--muted);
+    }
+    .footer-inner { max-width: 80rem; margin: 0 auto; }
+    .footer-sources {
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 400;
+      line-height: 1.7;
+      opacity: 0.7;
+      border-top: 2px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--fg);
+      color: var(--bg);
+      border: 2px solid var(--border);
+      padding: 0.85rem 1.5rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.15s ease-linear, transform 0.15s ease-linear;
+      z-index: 300;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Section nav ── */
+    .section-nav {
+      position: fixed;
+      left: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 2px solid var(--border);
+      background: var(--bg);
+    }
+    @media (max-width: 1200px) { .section-nav { display: none; } }
+    .section-nav a {
+      width: 12px; height: 12px;
+      border-bottom: 2px solid var(--border);
+      background: var(--bg);
+      display: block;
+      transition: background 0.15s ease-linear;
+    }
+    .section-nav a:last-child { border-bottom: none; }
+    .section-nav a:hover { background: var(--accent); }
+
+    .risk-high { color: var(--accent); font-weight: 700; }
+    .risk-mid { color: var(--fg); font-weight: 700; }
+    .risk-low { color: var(--fg); opacity: 0.5; }
+    .action-cell { font-weight: 700; color: var(--accent); }
+
+    .load-error {
+      background: var(--accent);
+      color: var(--bg);
+      border: 4px solid var(--border);
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+      font-weight: 700;
+      font-size: 0.8125rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: none;
+    }
+
+    .hero-strip {
+      border: 4px solid var(--border);
+      margin-bottom: 4rem;
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; }
+    }
+
+    @media print {
+      .header-actions, .share-panel, .section-nav, .quick-nav { display: none !important; }
+      body::before { display: none; }
+      .card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="eyebrow">Lotte Hotel · Procurement</div>
+      <h1>시장동향<br>대시보드</h1>
+      <div class="sub" id="dateLabel">로딩 중...</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="btnRefresh" title="데이터 새로고침">Refresh</button>
+      <button class="btn" onclick="window.print()">Print</button>
+      <a class="btn" href="https://ryusoonghoon.pythonanywhere.com/generate" target="_blank">PPT</a>
+      <a class="btn btn-primary" href="https://app.notion.com/p/3735d37746b0816f9dc7c1703af99d78" target="_blank">Notion</a>
+    </div>
+  </div>
+</header>
+
+<div class="update-banner swiss-dots">
+  <span class="live-dot" aria-hidden="true"></span>
+  <span>Updated <strong id="lastUpdated">-</strong></span>
+  <span>Next <span class="countdown" id="nextUpdate">-</span></span>
+  <span>Weekly · Mon 09:00</span>
+</div>
+
+<nav class="section-nav" id="sectionNav" aria-label="섹션 이동"></nav>
+
+<main class="container">
+
+  <div class="load-error" id="loadError">데이터를 불러오지 못했습니다. market_data.json 파일을 확인해 주세요.</div>
+
+  <div class="hero-strip">
+  <section id="sec-core" class="card core-messages swiss-grid-pattern">
+    <div class="card-header">
+      <div>
+        <div class="section-label"><span class="num">00.</span> Key Messages</div>
+        <div class="card-title">이달의 핵심 메시지</div>
+      </div>
+      <span class="card-badge" id="dataVersion">v-</span>
+    </div>
+    <div id="coreMessages"></div>
+  </section>
+  </div>
+
+  <section id="sec-summary" class="dash-section">
+    <div class="section-label"><span class="num">01.</span> Market Overview</div>
+    <h2 class="section-heading">시장현황 요약</h2>
+    <div class="status-grid" id="statusGrid"></div>
+  </section>
+
+  <nav class="quick-nav" id="quickNav" aria-label="섹션 바로가기"></nav>
+
+  <section id="sec-fx" class="dash-section">
+    <div class="section-label"><span class="num">02.</span> Foreign Exchange</div>
+    <h2 class="section-heading">환율</h2>
+    <div class="section-block grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">KPI</div></div>
+        <div class="kpi-row" id="fxKpi"></div>
+        <div class="chart-wrap swiss-grid-pattern"><canvas id="chartFx" aria-label="환율 추이 차트"></canvas></div>
+      </div>
+      <div class="card muted-bg swiss-dots">
+        <div class="card-header"><div class="card-title">Analysis</div></div>
+        <ul class="analysis-list" id="fxAnalysis"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-oil" class="dash-section">
+    <div class="section-label"><span class="num">03.</span> Energy</div>
+    <h2 class="section-heading">유가 / 에너지</h2>
+    <div class="section-block grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">International</div></div>
+        <div class="kpi-row" id="oilKpi"></div>
+        <div class="chart-wrap swiss-grid-pattern"><canvas id="chartOil"></canvas></div>
+      </div>
+      <div class="card muted-bg">
+        <div class="card-header"><div class="card-title">Domestic &amp; Analysis</div></div>
+        <table class="data-table" id="oilDomestic"></table>
+        <ul class="analysis-list" id="oilAnalysis" style="margin-top:1.5rem;"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-logistics" class="dash-section">
+    <div class="section-label"><span class="num">04.</span> Logistics</div>
+    <h2 class="section-heading">물류비 SCFI</h2>
+    <div class="section-block grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">SCFI Index</div></div>
+        <div class="kpi-row" id="logisticsKpi"></div>
+        <div class="chart-wrap swiss-grid-pattern"><canvas id="chartScfi"></canvas></div>
+      </div>
+      <div class="card muted-bg swiss-dots">
+        <div class="card-header"><div class="card-title">Routes</div></div>
+        <table class="data-table" id="routeTable"></table>
+        <ul class="analysis-list" id="logisticsAnalysis" style="margin-top:1.5rem;"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-materials" class="dash-section">
+    <div class="section-label"><span class="num">05.</span> Commodities</div>
+    <h2 class="section-heading">원자재 LME</h2>
+    <div class="section-block grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Metals KPI</div></div>
+        <div class="kpi-row" id="materialsKpi"></div>
+        <div class="chart-wrap swiss-grid-pattern"><canvas id="chartMaterials"></canvas></div>
+      </div>
+      <div class="card muted-bg">
+        <div class="card-header"><div class="card-title">Impact Matrix</div></div>
+        <table class="data-table" id="materialsTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-food" class="dash-section">
+    <div class="section-label"><span class="num">06.</span> Food &amp; Agri</div>
+    <h2 class="section-heading">농산물 · 식자재</h2>
+    <div class="section-block grid-2">
+      <div class="card muted-bg swiss-dots">
+        <div class="card-header"><div class="card-title">KAMIS</div></div>
+        <div class="kpi-row" id="foodKpi"></div>
+        <table class="data-table" id="kamisTable"></table>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">F&amp;B Items</div></div>
+        <table class="data-table" id="fbTable"></table>
+        <ul class="analysis-list" id="foodAnalysis" style="margin-top:1.5rem;"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-beverage" class="dash-section">
+    <div class="section-label"><span class="num">07.</span> Beverage</div>
+    <h2 class="section-heading">음료 · 주류</h2>
+    <div class="section-block grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Coffee</div></div>
+        <div class="kpi-row" id="beverageKpi"></div>
+        <div class="chart-wrap swiss-grid-pattern"><canvas id="chartCoffee"></canvas></div>
+      </div>
+      <div class="card muted-bg">
+        <div class="card-header"><div class="card-title">Wine &amp; Others</div></div>
+        <p id="wineNote" style="font-size:0.9375rem;padding:0.5rem 0;line-height:1.75;font-weight:500;"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-consumables" class="dash-section">
+    <div class="section-label"><span class="num">08.</span> Utilities</div>
+    <h2 class="section-heading">소모품 · 유틸리티</h2>
+    <div class="section-block grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Consumables</div></div>
+        <table class="data-table" id="consumablesTable"></table>
+      </div>
+      <div class="card muted-bg swiss-dots">
+        <div class="card-header"><div class="card-title">Utility</div></div>
+        <div id="utilityInfo"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-geo" class="dash-section">
+    <div class="section-label"><span class="num">09.</span> Geopolitics</div>
+    <h2 class="section-heading">지정학 리스크</h2>
+    <div class="section-block">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Risk Assessment</div>
+        <span class="card-badge" id="geoRisk">-</span>
+      </div>
+      <h3 id="geoHeadline" style="font-size:1.125rem;font-weight:700;margin-bottom:1.25rem;letter-spacing:-0.02em;text-transform:none;"></h3>
+      <ul class="analysis-list" id="geoPoints"></ul>
+    </div>
+    </div>
+  </section>
+
+  <section id="sec-top7" class="dash-section">
+    <div class="section-label"><span class="num">10.</span> Priority Items</div>
+    <h2 class="section-heading">TOP 7 핵심품목</h2>
+    <div class="section-block">
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="top7Table">
+          <thead>
+            <tr><th>순위</th><th>품목</th><th>구분</th><th>영향 요인</th><th>전망</th><th>대응</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <section id="sec-risk" class="dash-section">
+    <div class="section-label"><span class="num">11.</span> Action Plan</div>
+    <h2 class="section-heading">리스크 · 실행계획</h2>
+    <div class="section-block grid-2">
+      <div class="card muted-bg">
+        <div class="card-header"><div class="card-title">Risk Matrix</div></div>
+        <table class="data-table" id="riskTable">
+          <thead><tr><th>리스크</th><th>발생가능성</th><th>영향도</th><th>수준</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Action Plan</div></div>
+        <div class="grid-3" id="actionPlan"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer swiss-dots">
+  <div class="footer-inner">
+    <span id="footerDate"></span> — 롯데호텔 경영지원부문 구매팀 · 내부 의사결정 용도 · 대외 유출 금지
+    <p class="footer-sources"><strong>Sources</strong> — <span id="sourcesList"></span></p>
+  </div>
+</footer>
+
+<div class="share-panel">
+  <div class="share-menu" id="shareMenu">
+    <button onclick="copyDashboardLink()">Copy Link</button>
+    <button onclick="copyTeamsMessage()">Teams Message</button>
+    <button onclick="copyEmailDigest()">Email Digest</button>
+  </div>
+  <button class="share-fab" id="shareFab" title="공유" aria-label="공유 메뉴">+</button>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="market_data.js" charset="UTF-8"></script>
+<script>
+const SECTIONS = [
+  { id: 'fx', label: 'FX' },
+  { id: 'oil', label: 'Oil' },
+  { id: 'logistics', label: 'Logistics' },
+  { id: 'materials', label: 'LME' },
+  { id: 'food', label: 'Food' },
+  { id: 'beverage', label: 'Beverage' },
+  { id: 'consumables', label: 'Utility' },
+  { id: 'geo', label: 'Geo' }
+];
+
+const CHART_COLORS = {
+  fx: '#000000',
+  oil: '#FF3000',
+  scfi: '#FF3000',
+  materials: '#000000',
+  coffee: '#FF3000'
+};
+
+let DATA = null;
+const charts = {};
+
+async function loadData() {
+  document.getElementById('loadError').style.display = 'none';
+  try {
+    const res = await fetch('market_data.json?t=' + Date.now());
+    if (!res.ok) throw new Error('fetch failed');
+    DATA = await res.json();
+  } catch (e) {
+    if (window.__MARKET_DATA__ && window.__MARKET_DATA__.coreMessages) {
+      DATA = window.__MARKET_DATA__;
+    }
+  }
+  if (!DATA || !DATA.coreMessages) {
+    document.getElementById('loadError').style.display = 'block';
+    throw new Error('No data available');
+  }
+  renderAll();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleString('ko-KR', {
+    year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function updateCountdown() {
+  if (!DATA) return;
+  const next = new Date(DATA.meta.nextUpdate);
+  const diff = next - new Date();
+  const el = document.getElementById('nextUpdate');
+  if (diff <= 0) {
+    el.textContent = '지금 AI 트리거 실행!';
+    el.style.color = 'var(--accent)';
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  el.textContent = `${d}일 ${h}시간 ${m}분 후`;
+}
+
+function chartDefaults() {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: {
+        grid: { color: 'rgba(0,0,0,0.06)' },
+        ticks: { color: '#000000', font: { family: 'Inter', size: 10, weight: '500' } }
+      },
+      y: {
+        grid: { color: 'rgba(0,0,0,0.06)' },
+        ticks: { color: '#000000', font: { family: 'Inter', size: 10, weight: '500' } }
+      }
+    }
+  };
+}
+
+function makeChart(canvasId, labels, data, label, color) {
+  if (charts[canvasId]) charts[canvasId].destroy();
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  const c = color || '#FF3000';
+  charts[canvasId] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label,
+        data,
+        borderColor: c,
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        fill: false,
+        tension: 0,
+        pointRadius: 3,
+        pointBorderWidth: 2,
+        pointBorderColor: '#000000',
+        pointBackgroundColor: '#FFFFFF'
+      }]
+    },
+    options: chartDefaults()
+  });
+}
+
+function renderHeader() {
+  document.getElementById('dateLabel').textContent =
+    new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) + ' | 호텔 구매팀';
+  document.getElementById('lastUpdated').textContent = formatDate(DATA.meta.lastUpdated);
+  document.getElementById('dataVersion').textContent = 'v' + DATA.meta.version;
+  document.getElementById('footerDate').textContent =
+    '작성일: ' + formatDate(DATA.meta.lastUpdated).split(' ').slice(0, 3).join(' ');
+  updateCountdown();
+}
+
+function renderCoreMessages() {
+  document.getElementById('coreMessages').innerHTML =
+    DATA.coreMessages.map(m => `<blockquote>${m}</blockquote>`).join('');
+}
+
+function scrollToSection(id) {
+  const el = document.getElementById('sec-' + id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderStatusGrid() {
+  const tabMap = { '환율':'fx','유가':'oil','물류비':'logistics','물류':'logistics','원자재':'materials','농산물':'food','F&B':'beverage','소모품':'consumables','유틸리티':'consumables','지정학':'geo' };
+  document.getElementById('statusGrid').innerHTML = DATA.marketStatus.map(s => {
+    const sec = tabMap[s.category] || 'fx';
+    return `<div class="status-item" onclick="scrollToSection('${sec}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')scrollToSection('${sec}')">
+      <div class="emoji-status">${s.status}</div>
+      <div class="emoji-cat">${s.icon}</div>
+      <div class="cat">${s.category}</div>
+      <div class="val">${s.value}</div>
+      <div class="chg">${s.change}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderQuickNav() {
+  document.getElementById('quickNav').innerHTML = SECTIONS.map(s =>
+    `<a href="#sec-${s.id}">${s.label}</a>`
+  ).join('');
+  document.getElementById('sectionNav').innerHTML =
+    ['sec-core','sec-summary','sec-fx','sec-oil','sec-logistics','sec-top7','sec-risk']
+      .map(id => `<a href="#${id}" aria-label="${id}"></a>`).join('');
+}
+
+function renderKpi(id, items) {
+  document.getElementById(id).innerHTML = items.map(k => `
+    <div class="kpi">
+      <div class="label">${k.label}</div>
+      <div class="value mono">${k.value}</div>
+      ${k.delta ? `<div class="delta ${k.deltaClass || ''}">${k.delta}</div>` : ''}
+    </div>`).join('');
+}
+
+function renderAnalysis(id, items) {
+  document.getElementById(id).innerHTML = items.map(a => `<li>${a}</li>`).join('');
+}
+
+function renderFx() {
+  const f = DATA.fx;
+  renderKpi('fxKpi', [
+    { label: 'USD/KRW', value: f.kpi.usd.toLocaleString() + '원' },
+    { label: 'EUR/KRW', value: f.kpi.eur.toLocaleString() + '원' },
+    { label: 'JPY(100)', value: f.kpi.jpy.toLocaleString() + '원' },
+    { label: 'CNY/KRW', value: f.kpi.cny.toLocaleString() + '원' }
+  ]);
+  makeChart('chartFx', f.trendLabels, f.trend, '원/달러', CHART_COLORS.fx);
+  renderAnalysis('fxAnalysis', f.analysis);
+}
+
+function renderOil() {
+  const o = DATA.oil;
+  renderKpi('oilKpi', [
+    { label: 'WTI', value: '$' + o.kpi.wti, delta: o.kpi.change_wti + '%', deltaClass: 'down' },
+    { label: 'Brent', value: '$' + o.kpi.brent, delta: o.kpi.change_brent + '%', deltaClass: 'down' }
+  ]);
+  makeChart('chartOil', o.trendLabels, o.trend, 'WTI', CHART_COLORS.oil);
+  document.getElementById('oilDomestic').innerHTML = `
+    <thead><tr><th>품목</th><th>가격</th><th>비고</th></tr></thead>
+    <tbody>${o.domestic.map(d => `<tr><td>${d.item}</td><td class="mono">${d.price}</td><td>${d.note}</td></tr>`).join('')}</tbody>`;
+  renderAnalysis('oilAnalysis', o.analysis);
+}
+
+function renderLogistics() {
+  const l = DATA.logistics;
+  renderKpi('logisticsKpi', [
+    { label: 'SCFI', value: l.scfi.toLocaleString(), delta: '+' + l.scfiChange + '%', deltaClass: 'up' },
+    { label: '추세', value: '9주 연속 ↑', delta: '2024.8 이후 최고', deltaClass: 'up' }
+  ]);
+  makeChart('chartScfi', l.scfiTrendLabels, l.scfiTrend, 'SCFI', CHART_COLORS.scfi);
+  document.getElementById('routeTable').innerHTML = `
+    <thead><tr><th>노선</th><th>단위</th><th>운임($)</th><th>전주대비</th></tr></thead>
+    <tbody>${l.routes.map(r => `<tr>
+      <td>${r.route}</td><td>${r.unit}</td>
+      <td class="mono">${r.price.toLocaleString()}</td>
+      <td class="${r.change > 0 ? 'risk-high' : 'risk-low'}">${r.change > 0 ? '+' : ''}${r.change}%</td>
+    </tr>`).join('')}</tbody>`;
+  renderAnalysis('logisticsAnalysis', l.analysis);
+}
+
+function renderMaterials() {
+  const m = DATA.materials;
+  renderKpi('materialsKpi', [
+    { label: '구리', value: '$' + m.kpi.copper.toLocaleString() },
+    { label: '알루미늄', value: '$' + m.kpi.aluminum.toLocaleString() },
+    { label: '아연', value: '$' + m.kpi.zinc.toLocaleString() },
+    { label: '니켈', value: '$' + m.kpi.nickel.toLocaleString() }
+  ]);
+  makeChart('chartMaterials', m.trendLabels, m.trend, '구리', CHART_COLORS.materials);
+  document.getElementById('materialsTable').innerHTML = `
+    <thead><tr><th>금속</th><th>가격</th><th>영향</th><th>전망</th></tr></thead>
+    <tbody>${m.items.map(i => `<tr><td>${i.metal}</td><td class="mono">${i.price}</td><td>${i.impact}</td><td>${i.outlook}</td></tr>`).join('')}</tbody>`;
+}
+
+function renderFood() {
+  const f = DATA.food;
+  renderKpi('foodKpi', [
+    { label: '소비자물가', value: f.cpi.value + '%', delta: f.cpi.period },
+    { label: '데이터', value: 'KAMIS', delta: '가락시장 연동' }
+  ]);
+  document.getElementById('kamisTable').innerHTML = `
+    <thead><tr><th>품목</th><th>가격</th><th>단위</th><th>시장</th><th>일자</th><th>추세</th></tr></thead>
+    <tbody>${f.kamis.map(k => `<tr><td>${k.item}</td><td class="mono">${k.price}</td><td>${k.unit}</td><td>${k.market}</td><td>${k.date}</td><td>${k.trend}</td></tr>`).join('')}</tbody>`;
+  document.getElementById('fbTable').innerHTML = `
+    <thead><tr><th>품목</th><th>전년</th><th>전월</th><th>현재</th><th>단위</th><th>추세</th></tr></thead>
+    <tbody>${DATA.fbItems.map(fb => `<tr><td>${fb.item}</td><td class="mono">${fb.prev_year}</td><td class="mono">${fb.prev_month}</td><td class="mono">${fb.current}</td><td>${fb.unit}</td><td>${fb.trend}</td></tr>`).join('')}</tbody>`;
+  renderAnalysis('foodAnalysis', f.analysis);
+}
+
+function renderBeverage() {
+  const b = DATA.beverage;
+  renderKpi('beverageKpi', [
+    { label: '아라비카', value: b.coffee.price + ' ¢/lb', delta: '+' + b.coffee.change + '%', deltaClass: 'up' },
+    { label: '상태', value: '4.5개월 최고', delta: b.coffee.note }
+  ]);
+  makeChart('chartCoffee', b.coffeeTrendLabels, b.coffeeTrend, '아라비카', CHART_COLORS.coffee);
+  document.getElementById('wineNote').textContent = b.wine.note;
+}
+
+function renderConsumables() {
+  document.getElementById('consumablesTable').innerHTML = `
+    <thead><tr><th>원료</th><th>추세</th><th>비고</th></tr></thead>
+    <tbody>${DATA.consumables.items.map(c => `<tr><td>${c.material}</td><td>${c.trend}</td><td>${c.note}</td></tr>`).join('')}</tbody>`;
+  const u = DATA.utility;
+  document.getElementById('utilityInfo').innerHTML = `
+    <div class="kpi-row">
+      <div class="kpi"><div class="label">전기요금</div><div class="value" style="font-size:1rem;">${u.electricity.status}</div><div class="delta">${u.electricity.note}</div></div>
+      <div class="kpi"><div class="label">도시가스</div><div class="value" style="font-size:0.9rem;">${u.gas.residential}</div><div class="delta">${u.gas.note}</div></div>
+      <div class="kpi"><div class="label">석유최고가</div><div class="value" style="font-size:1rem;">${u.oil_cap.change}</div><div class="delta">${u.oil_cap.note}</div></div>
+    </div>`;
+}
+
+function renderGeo() {
+  const g = DATA.geo;
+  document.getElementById('geoRisk').textContent = g.risk + ' 주의';
+  document.getElementById('geoHeadline').textContent = g.headline;
+  renderAnalysis('geoPoints', g.points);
+}
+
+function renderTop7() {
+  document.querySelector('#top7Table tbody').innerHTML = DATA.top7.map(t => `
+    <tr>
+      <td>${t.status} ${t.rank}</td>
+      <td><strong>${t.item}</strong></td>
+      <td>${t.category}</td>
+      <td>${t.factor}</td>
+      <td>${t.outlook}</td>
+      <td class="action-cell">${t.action}</td>
+    </tr>`).join('');
+}
+
+function renderRisk() {
+  document.querySelector('#riskTable tbody').innerHTML = DATA.riskMatrix.map(r => `
+    <tr><td>${r.risk}</td><td>${r.probability}</td><td>${r.impact}</td><td>${r.level}</td></tr>`).join('');
+  const ap = DATA.actionPlan;
+  document.getElementById('actionPlan').innerHTML = `
+    <div class="plan-col"><h4>단기 (1~3M)</h4><ul>${ap.short.map(s => `<li>${s}</li>`).join('')}</ul></div>
+    <div class="plan-col"><h4>중기 (3~6M)</h4><ul>${ap.mid.map(s => `<li>${s}</li>`).join('')}</ul></div>
+    <div class="plan-col"><h4>장기 (6M+)</h4><ul>${ap.long.map(s => `<li>${s}</li>`).join('')}</ul></div>`;
+}
+
+function renderSources() {
+  document.getElementById('sourcesList').textContent = DATA.sources.join(' · ');
+}
+
+function renderAll() {
+  renderHeader();
+  renderCoreMessages();
+  renderStatusGrid();
+  renderQuickNav();
+  renderFx(); renderOil(); renderLogistics(); renderMaterials();
+  renderFood(); renderBeverage(); renderConsumables(); renderGeo();
+  renderTop7(); renderRisk(); renderSources();
+  const seen = localStorage.getItem('dashboard_version');
+  if (seen !== DATA.meta.version) {
+    showToast('새 시장 데이터가 반영됐어요!');
+    localStorage.setItem('dashboard_version', DATA.meta.version);
+  }
+}
+
+function copyDashboardLink() {
+  navigator.clipboard.writeText(window.location.href);
+  showToast('링크 복사 완료!');
+}
+function copyTeamsMessage() {
+  const text = `📊 [구매팀 시장동향 주간 브리핑]\n${new Date().toLocaleDateString('ko-KR')}\n\n${DATA.coreMessages.join('\n')}\n\n🔗 ${window.location.href}`;
+  navigator.clipboard.writeText(text);
+  showToast('Teams 메시지 복사 완료!');
+}
+function copyEmailDigest() {
+  const status = DATA.marketStatus.map(s => `${s.status} ${s.category}: ${s.value}`).join('\n');
+  const text = `[구매팀] 시장동향 주간 요약 (${DATA.meta.version})\n\n${DATA.coreMessages.join('\n')}\n\n${status}\n\n${window.location.href}`;
+  navigator.clipboard.writeText(text);
+  showToast('이메일 요약 복사 완료!');
+}
+
+document.getElementById('shareFab').addEventListener('click', () => {
+  document.getElementById('shareMenu').classList.toggle('open');
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.share-panel')) document.getElementById('shareMenu').classList.remove('open');
+});
+document.getElementById('btnRefresh').addEventListener('click', () => {
+  Object.values(charts).forEach(c => c.destroy());
+  loadData().then(() => showToast('데이터 새로고침 완료!'));
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await loadData();
+  } catch (e) {
+    console.error(e);
+  }
+  setInterval(() => { if (DATA) updateCountdown(); }, 60000);
+  setInterval(() => {
+    if (DATA && new Date() > new Date(DATA.meta.nextUpdate)) {
+      showToast('주간 업데이트 시점입니다!');
+    }
+  }, 3600000);
+});
+</script>
+
+</body>
+</html>
