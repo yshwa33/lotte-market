@@ -266,7 +266,7 @@
       }
 
       /* ── Section BACK button ── */
-      #top-nav { scroll-margin-top: 5.5rem; }
+      #sec-summary { scroll-margin-top: 5.5rem; }
       .section-block-footer {
         display: flex;
         justify-content: flex-end;
@@ -482,56 +482,6 @@
       .analysis-list li:hover { border-left-color: var(--lotte-red); }
       .analysis-list li:last-child { border-bottom: none; }
 
-      /* ── Quick nav ── */
-    .quick-nav-block {
-      margin: 1.25rem 0 2.5rem;
-      border: 1px solid var(--border);
-        border-radius: var(--radius);
-        overflow: hidden;
-        box-shadow: var(--shadow);
-        background: var(--bg-card);
-      }
-      .quick-nav {
-        display: grid;
-        grid-template-columns: repeat(10, minmax(0, 1fr));
-        gap: 0;
-        margin: 0;
-      }
-      .quick-nav a {
-        padding: 0.65rem 0.5rem;
-        min-height: 0;
-        border: none;
-        border-right: 1px solid var(--border);
-        border-radius: 0;
-        background: var(--bg-card);
-        color: var(--fg);
-        font-size: 0.8125rem;
-        font-weight: 600;
-        letter-spacing: 0;
-        text-decoration: none;
-        white-space: nowrap;
-        transition: background 0.2s, color 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        line-height: 1.5;
-      }
-      .quick-nav a:last-child { border-right: none; }
-      .quick-nav a:hover { background: var(--lotte-red); color: #FFFFFF; }
-      @media (max-width: 900px) {
-        .quick-nav {
-          display: flex;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-        .quick-nav a {
-          flex: 1 0 auto;
-          min-width: 5.5rem;
-          padding: 0.7rem 0.85rem;
-        }
-      }
-
       .dash-section {
         margin-bottom: 3.5rem;
         scroll-margin-top: 5rem;
@@ -708,7 +658,7 @@
 
       @media print {
         body { background: #fff; color: #000; }
-        .header-actions, .share-panel, .section-nav, .quick-nav-block { display: none !important; }
+        .header-actions, .share-panel, .section-nav { display: none !important; }
         .card { break-inside: avoid; background: #fff; }
       }
     </style>
@@ -757,10 +707,6 @@
       </div>
       <div id="coreMessages"></div>
     </section>
-    </div>
-
-    <div class="quick-nav-block" id="top-nav">
-      <nav class="quick-nav" id="quickNav" aria-label="섹션 바로가기"></nav>
     </div>
 
     <section id="sec-summary" class="dash-section">
@@ -1163,7 +1109,7 @@
   }
 
   function scrollToTopNav() {
-    const el = document.getElementById('top-nav');
+    const el = document.getElementById('sec-summary');
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -1191,10 +1137,10 @@
       footer.className = 'section-block-footer';
 
       const back = document.createElement('a');
-      back.href = '#top-nav';
+      back.href = '#sec-summary';
       back.className = 'section-back';
       back.textContent = '← BACK';
-      back.setAttribute('aria-label', '상단 메뉴로 돌아가기');
+      back.setAttribute('aria-label', '시장현황 요약으로 돌아가기');
       back.addEventListener('click', e => {
         e.preventDefault();
         scrollToTopNav();
@@ -1219,10 +1165,7 @@
     }).join('');
   }
 
-  function renderQuickNav() {
-    document.getElementById('quickNav').innerHTML = SECTIONS.map(s =>
-      `<a href="#sec-${s.id}">${s.label}</a>`
-    ).join('');
+  function initSectionNav() {
     initSectionBackButtons();
     document.getElementById('sectionNav').innerHTML =
       ['sec-core','sec-summary','sec-procurement','sec-costimpact','sec-fx','sec-top7','sec-risk']
@@ -1429,7 +1372,7 @@
     renderProcurement();
     renderCostImpact();
     renderWeeklyDecisions();
-    renderQuickNav();
+    initSectionNav();
     renderFx(); renderOil(); renderLogistics(); renderMaterials();
     renderFood(); renderBeverage(); renderConsumables(); renderGeo();
     renderTop7(); renderRisk(); renderSources();
