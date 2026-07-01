@@ -6,30 +6,36 @@
   <meta name="description" content="롯데호텔 구매팀 시장동향 대시보드 — 환율·유가·물류·원자재·식자재 실시간 모니터링">
   <title>구매팀 시장동향 대시보드 | 롯데호텔</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
-    /* ── Lotte Hotel · Bright Theme ── */
+    /* ── LOTTE CI Theme ── */
     :root {
-      --bg: #F5F1EA;
-      --bg-elevated: #FFFCF8;
+      --lotte-red: #DA291C;
+      --lotte-red-dark: #B82218;
+      --lotte-grey: #54585A;
+      --lotte-black: #000000;
+      --lotte-silver: #8A8D8F;
+      --lotte-gold: #877669;
+      --bg: #F5F5F5;
+      --bg-elevated: #FAFAFA;
       --bg-card: #FFFFFF;
-      --fg: #1E3354;
-      --fg-muted: #5A6B82;
-      --gold: #A8844A;
-      --gold-light: #C5A572;
-      --gold-dark: #8B6F3E;
-      --navy: #1E3354;
-      --muted: #EDE8DF;
-      --accent: #A8844A;
-      --border: rgba(30, 51, 84, 0.1);
-      --border-strong: rgba(168, 132, 74, 0.4);
-      --danger: #C45C5C;
-      --success: #3D8B6E;
+      --fg: #000000;
+      --fg-muted: #54585A;
+      --gold: #877669;
+      --gold-light: #A08F7F;
+      --gold-dark: #6E5F52;
+      --navy: #000000;
+      --muted: #EEEEEE;
+      --accent: #DA291C;
+      --border: rgba(84, 88, 90, 0.18);
+      --border-strong: rgba(218, 41, 28, 0.35);
+      --danger: #DA291C;
+      --success: #2E7D5A;
       --font: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-display: 'Playfair Display', Georgia, serif;
-      --radius: 8px;
-      --shadow: 0 2px 16px rgba(30, 51, 84, 0.07);
+      --font-display: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      --radius: 6px;
+      --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,9 +45,7 @@
       font-size: 0.9375rem;
       font-weight: 400;
       background: var(--bg);
-      background-image:
-        radial-gradient(ellipse 70% 40% at 50% 0%, rgba(197, 165, 114, 0.12), transparent),
-        linear-gradient(180deg, #F8F5EF 0%, #F0EBE3 100%);
+      background-image: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%);
       color: var(--fg);
       line-height: 1.65;
       min-height: 100vh;
@@ -50,63 +54,77 @@
 
     .swiss-grid-pattern {
       background-image:
-        linear-gradient(rgba(30, 51, 84, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(30, 51, 84, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(84, 88, 90, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(84, 88, 90, 0.04) 1px, transparent 1px);
       background-size: 32px 32px;
     }
     .swiss-dots {
-      background-image: radial-gradient(rgba(168, 132, 74, 0.08) 1px, transparent 1px);
+      background-image: radial-gradient(rgba(218, 41, 28, 0.06) 1px, transparent 1px);
       background-size: 20px 20px;
     }
 
     h1, h2, h3, h4, .section-heading, .hero-title {
       font-family: var(--font-display);
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      color: var(--navy);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--fg);
     }
 
     .card-title {
       font-family: var(--font);
-      font-weight: 600;
-      letter-spacing: 0.06em;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--gold-dark);
+      color: var(--lotte-grey);
       font-size: 0.75rem;
     }
 
-    .mono { font-family: var(--font); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--navy); }
+    .mono { font-family: var(--font); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--fg); }
 
     /* ── Header ── */
     .header {
-      background: rgba(255, 252, 248, 0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-strong);
-      padding: 1.25rem 2rem;
+      background: #FFFFFF;
+      border-bottom: 3px solid var(--lotte-red);
+      padding: 1rem 2rem;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 1px 0 rgba(168, 132, 74, 0.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
     .header-inner {
       max-width: 80rem;
       margin: 0 auto;
       display: grid;
       grid-template-columns: 1fr auto;
-      align-items: end;
+      align-items: center;
       gap: 2rem;
     }
     @media (max-width: 768px) {
       .header-inner { grid-template-columns: 1fr; }
       .header { padding: 1rem; }
+      .lotte-logo { height: 36px; }
+      .logo-area { gap: 0.85rem; }
+      .logo-area h1 { font-size: 1.35rem; }
     }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .lotte-logo {
+      height: 48px;
+      width: auto;
+      flex-shrink: 0;
+      object-fit: contain;
+    }
+    .logo-text { min-width: 0; }
     .logo-area .eyebrow {
       font-size: 0.6875rem;
       font-weight: 600;
-      letter-spacing: 0.25em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 0.5rem;
+      color: var(--lotte-grey);
+      margin-bottom: 0.35rem;
     }
     .logo-area h1 {
       font-size: clamp(1.75rem, 4vw, 2.75rem);
@@ -148,19 +166,19 @@
       transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
     .btn + .btn { margin-left: 0; }
-    .btn:hover { background: var(--muted); border-color: var(--gold); color: var(--gold-dark); }
-    .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .btn:hover { background: var(--muted); border-color: var(--lotte-grey); color: var(--fg); }
+    .btn:focus-visible { outline: 2px solid var(--lotte-red); outline-offset: 2px; }
     .btn-primary {
-      background: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
-      border-color: var(--gold);
-      color: #FFFCF8;
+      background: var(--lotte-red);
+      border-color: var(--lotte-red);
+      color: #FFFFFF;
     }
-    .btn-primary:hover { background: linear-gradient(135deg, var(--gold), #D4B88A); color: #FFFCF8; }
+    .btn-primary:hover { background: var(--lotte-red-dark); border-color: var(--lotte-red-dark); color: #FFFFFF; }
 
     /* ── Update banner ── */
     .update-banner {
-      background: var(--navy);
-      border-bottom: none;
+      background: var(--lotte-grey);
+      border-bottom: 2px solid var(--lotte-red);
       padding: 0.65rem 2rem;
       font-size: 0.75rem;
       font-weight: 500;
@@ -168,17 +186,17 @@
       align-items: center;
       gap: 1.5rem;
       flex-wrap: wrap;
-      color: rgba(255, 252, 248, 0.75);
+      color: rgba(255, 255, 255, 0.8);
     }
-    .update-banner strong { color: #FFFCF8; }
+    .update-banner strong { color: #FFFFFF; }
     .update-banner .live-dot {
       width: 8px; height: 8px;
-      background: var(--gold-light);
+      background: var(--lotte-red);
       border-radius: 50%;
       flex-shrink: 0;
-      box-shadow: 0 0 6px rgba(197, 165, 114, 0.8);
+      box-shadow: 0 0 6px rgba(218, 41, 28, 0.7);
     }
-    .countdown { color: var(--gold-light); font-weight: 600; }
+    .countdown { color: #FFFFFF; font-weight: 700; }
 
     /* ── Layout ── */
     .container {
@@ -217,13 +235,13 @@
     }
     .card-badge {
       font-size: 0.6875rem;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.06em;
       padding: 0.2rem 0.6rem;
-      border: 1px solid var(--border-strong);
+      border: 1px solid var(--lotte-red);
       border-radius: var(--radius);
-      color: var(--gold-dark);
-      background: rgba(168, 132, 74, 0.1);
+      color: var(--lotte-red);
+      background: rgba(218, 41, 28, 0.06);
     }
 
     .section-label {
@@ -235,9 +253,9 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      color: var(--fg-muted);
+      color: var(--lotte-grey);
     }
-    .section-label .num { color: var(--gold); font-family: var(--font-display); }
+    .section-label .num { color: var(--lotte-red); font-weight: 800; }
 
     .section-heading {
       font-size: clamp(1.35rem, 3vw, 2rem);
@@ -259,7 +277,7 @@
       padding: 0.85rem 0 0.85rem 1.25rem;
       font-size: 0.95rem;
       font-weight: 500;
-      border-left: 3px solid var(--gold);
+      border-left: 3px solid var(--lotte-red);
       margin: 0;
       line-height: 1.75;
       color: var(--fg);
@@ -269,7 +287,7 @@
     /* ── Status grid ── */
     .status-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      grid-template-columns: repeat(9, minmax(0, 1fr));
       gap: 0;
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -279,25 +297,50 @@
     .status-item {
       background: var(--bg-card);
       border-right: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 1.15rem 1rem;
+      padding: 1rem 0.65rem;
       cursor: pointer;
       transition: background 0.2s;
+      min-width: 0;
     }
-    .status-item:hover { background: rgba(168, 132, 74, 0.08); }
-    .status-item .val { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--navy); }
+    .status-item:last-child { border-right: none; }
+    .status-item:hover { background: rgba(218, 41, 28, 0.04); }
+    .status-item .val {
+      font-size: 0.875rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      line-height: 1.3;
+      word-break: keep-all;
+    }
     .status-item:hover .cat, .status-item:hover .chg { color: var(--fg-muted); }
-    .status-item .emoji-status { font-size: 1rem; margin-bottom: 0.25rem; }
-    .status-item .emoji-cat { font-size: 1.25rem; margin-bottom: 0.35rem; }
+    .status-item .emoji-status { font-size: 0.9rem; margin-bottom: 0.2rem; }
+    .status-item .emoji-cat { font-size: 1.1rem; margin-bottom: 0.3rem; }
     .status-item .cat {
-      font-size: 0.625rem;
+      font-size: 0.5625rem;
       font-weight: 600;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--fg-muted);
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.3rem;
     }
-    .status-item .chg { font-size: 0.6875rem; color: var(--fg-muted); margin-top: 0.25rem; }
+    .status-item .chg {
+      font-size: 0.625rem;
+      color: var(--fg-muted);
+      margin-top: 0.2rem;
+      line-height: 1.35;
+    }
+    @media (max-width: 900px) {
+      .status-grid {
+        display: flex;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+      }
+      .status-item {
+        flex: 0 0 7.5rem;
+        min-width: 7.5rem;
+      }
+    }
 
     /* ── KPI ── */
     .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.25rem; }
@@ -317,7 +360,7 @@
     }
     .kpi .delta { font-size: 0.75rem; font-weight: 400; margin-top: 0.2rem; color: var(--fg-muted); }
 
-    .kpi .value { font-size: 1.35rem; font-weight: 700; margin-top: 0.25rem; letter-spacing: -0.02em; color: var(--navy); }
+    .kpi .value { font-size: 1.35rem; font-weight: 800; margin-top: 0.25rem; letter-spacing: -0.02em; color: var(--fg); }
     .delta.up { color: var(--danger); }
     .delta.down { color: var(--success); }
 
@@ -330,7 +373,7 @@
       padding: 1rem 1.25rem;
       background: var(--bg-elevated);
       border-radius: var(--radius);
-      border-left: 3px solid var(--gold);
+      border-left: 3px solid var(--lotte-gold);
     }
     .hedge-box {
       padding: 1rem;
@@ -339,7 +382,7 @@
       border: 1px solid var(--border);
       margin-bottom: 0.75rem;
     }
-    .hedge-box strong { color: var(--gold-dark); display: block; margin-bottom: 0.35rem; font-size: 0.8rem; }
+    .hedge-box strong { color: var(--lotte-gold); display: block; margin-bottom: 0.35rem; font-size: 0.8rem; }
     .hedge-box p { font-size: 0.875rem; margin: 0; color: var(--fg); }
     .impact-up { color: var(--danger); font-weight: 600; }
     .impact-down { color: var(--success); font-weight: 600; }
@@ -359,8 +402,8 @@
     /* ── Tables ── */
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
     .data-table th {
-      background: var(--navy);
-      color: #FFFCF8;
+      background: var(--lotte-red);
+      color: #FFFFFF;
       padding: 0.7rem 1rem;
       text-align: left;
       font-weight: 600;
@@ -390,7 +433,7 @@
       color: var(--fg);
       transition: border-color 0.2s;
     }
-    .analysis-list li:hover { border-left-color: var(--gold); }
+    .analysis-list li:hover { border-left-color: var(--lotte-red); }
     .analysis-list li:last-child { border-bottom: none; }
 
     /* ── Quick nav ── */
@@ -417,7 +460,7 @@
       display: flex;
       align-items: center;
     }
-    .quick-nav a:hover { background: var(--navy); color: #FFFCF8; border-color: var(--navy); }
+    .quick-nav a:hover { background: var(--lotte-red); color: #FFFFFF; border-color: var(--lotte-red); }
 
     .dash-section {
       margin-bottom: 3.5rem;
@@ -433,9 +476,9 @@
     /* ── Action plan ── */
     .plan-col h4 {
       font-size: 0.75rem;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.08em;
-      color: var(--gold);
+      color: var(--lotte-gold);
       margin-bottom: 0.85rem;
       padding-bottom: 0.5rem;
       border-bottom: 1px solid var(--border);
@@ -448,7 +491,7 @@
       border-bottom: 1px solid var(--border);
       color: var(--fg);
     }
-    .plan-col li::before { content: '◆ '; color: var(--gold); font-size: 0.5rem; vertical-align: middle; }
+    .plan-col li::before { content: '◆ '; color: var(--lotte-red); font-size: 0.5rem; vertical-align: middle; }
 
     /* ── Share panel ── */
     .share-panel { position: fixed; bottom: 2rem; right: 2rem; z-index: 200; }
@@ -456,16 +499,16 @@
       width: 52px; height: 52px;
       border: none;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
-      color: #FFFCF8;
+      background: var(--lotte-red);
+      color: #FFFFFF;
       font-size: 1.5rem;
       font-weight: 300;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 16px rgba(168, 132, 74, 0.35);
+      box-shadow: 0 4px 16px rgba(218, 41, 28, 0.35);
     }
-    .share-fab:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(197, 165, 114, 0.45); }
-    .share-fab:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+    .share-fab:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(218, 41, 28, 0.45); }
+    .share-fab:focus-visible { outline: 2px solid var(--lotte-gold); outline-offset: 2px; }
     .share-menu {
       display: none;
       position: absolute;
@@ -495,7 +538,7 @@
       transition: background 0.2s;
     }
     .share-menu button:last-child { border-bottom: none; }
-    .share-menu button:hover { background: rgba(197, 165, 114, 0.12); color: var(--gold-light); }
+    .share-menu button:hover { background: rgba(218, 41, 28, 0.06); color: var(--lotte-red); }
 
     /* ── Footer ── */
     .footer {
@@ -503,11 +546,11 @@
       padding: 2.5rem 2rem;
       font-size: 0.75rem;
       font-weight: 400;
-      border-top: 1px solid var(--border-strong);
-      background: var(--navy);
-      color: rgba(255, 252, 248, 0.75);
+      border-top: 3px solid var(--lotte-red);
+      background: var(--lotte-black);
+      color: rgba(255, 255, 255, 0.75);
     }
-    .footer-sources strong { color: var(--gold-light); }
+    .footer-sources strong { color: var(--lotte-gold); }
 
     .footer-inner { max-width: 80rem; margin: 0 auto; }
     .footer-sources {
@@ -524,9 +567,9 @@
       bottom: 5rem;
       left: 50%;
       transform: translateX(-50%) translateY(12px);
-      background: var(--navy);
-      color: #FFFCF8;
-      border: 1px solid var(--gold);
+      background: var(--lotte-grey);
+      color: #FFFFFF;
+      border: 1px solid var(--lotte-red);
       border-radius: var(--radius);
       padding: 0.75rem 1.25rem;
       font-size: 0.75rem;
@@ -552,23 +595,23 @@
       padding: 8px;
       border: 1px solid var(--border);
       border-radius: 999px;
-      background: rgba(255, 252, 248, 0.95);
+      background: rgba(255, 255, 255, 0.98);
       box-shadow: var(--shadow);
     }
     @media (max-width: 1200px) { .section-nav { display: none; } }
     .section-nav a {
       width: 8px; height: 8px;
       border-radius: 50%;
-      background: var(--fg-muted);
+      background: var(--lotte-silver);
       display: block;
       transition: background 0.2s, transform 0.2s;
     }
-    .section-nav a:hover { background: var(--gold); transform: scale(1.3); }
+    .section-nav a:hover { background: var(--lotte-red); transform: scale(1.3); }
 
-    .risk-high { color: var(--danger); font-weight: 600; }
-    .risk-mid { color: var(--gold-dark); font-weight: 600; }
+    .risk-high { color: var(--lotte-red); font-weight: 600; }
+    .risk-mid { color: var(--lotte-gold); font-weight: 600; }
     .risk-low { color: var(--success); font-weight: 500; }
-    .action-cell { font-weight: 600; color: var(--gold-dark); }
+    .action-cell { font-weight: 700; color: var(--lotte-red); }
 
     .load-error {
       background: rgba(196, 92, 92, 0.1);
@@ -605,9 +648,12 @@
 <header class="header">
   <div class="header-inner">
     <div class="logo-area">
-      <div class="eyebrow">Lotte Hotel · Procurement Intelligence</div>
-      <h1>시장동향 대시보드</h1>
-      <div class="sub" id="dateLabel">로딩 중...</div>
+      <img src="assets/lotte-logo.png" alt="LOTTE" class="lotte-logo" width="120" height="48">
+      <div class="logo-text">
+        <div class="eyebrow">Lotte Hotel · Procurement Intelligence</div>
+        <h1>시장동향 대시보드</h1>
+        <div class="sub" id="dateLabel">로딩 중...</div>
+      </div>
     </div>
     <div class="header-actions">
       <button class="btn" id="btnRefresh" title="데이터 새로고침">새로고침</button>
@@ -904,11 +950,11 @@ const SECTIONS = [
 ];
 
 const CHART_COLORS = {
-  fx: '#1E3354',
-  oil: '#A8844A',
-  scfi: '#C45C5C',
-  materials: '#1E3354',
-  coffee: '#A8844A'
+  fx: '#54585A',
+  oil: '#DA291C',
+  scfi: '#877669',
+  materials: '#54585A',
+  coffee: '#DA291C'
 };
 
 let DATA = null;
@@ -986,12 +1032,12 @@ function chartDefaults() {
     plugins: { legend: { display: false } },
     scales: {
       x: {
-        grid: { color: 'rgba(30, 51, 84, 0.08)' },
-        ticks: { color: '#5A6B82', font: { family: 'Noto Sans KR', size: 10, weight: '500' } }
+        grid: { color: 'rgba(84, 88, 90, 0.12)' },
+        ticks: { color: '#54585A', font: { family: 'Noto Sans KR', size: 10, weight: '500' } }
       },
       y: {
-        grid: { color: 'rgba(30, 51, 84, 0.08)' },
-        ticks: { color: '#5A6B82', font: { family: 'Noto Sans KR', size: 10, weight: '500' } }
+        grid: { color: 'rgba(84, 88, 90, 0.12)' },
+        ticks: { color: '#54585A', font: { family: 'Noto Sans KR', size: 10, weight: '500' } }
       }
     }
   };
@@ -1001,7 +1047,7 @@ function makeChart(canvasId, labels, data, label, color) {
   if (charts[canvasId]) charts[canvasId].destroy();
   const ctx = document.getElementById(canvasId);
   if (!ctx) return;
-  const c = color || '#FF3000';
+  const c = color || '#DA291C';
   charts[canvasId] = new Chart(ctx, {
     type: 'line',
     data: {
@@ -1016,7 +1062,7 @@ function makeChart(canvasId, labels, data, label, color) {
         tension: 0,
         pointRadius: 3,
         pointBorderWidth: 2,
-        pointBorderColor: '#A8844A',
+        pointBorderColor: '#DA291C',
         pointBackgroundColor: '#FFFFFF'
       }]
     },
