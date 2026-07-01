@@ -225,6 +225,7 @@
       transition: background 0.2s;
     }
     .card.muted-bg { background: var(--bg-elevated); }
+    .card-with-nav { padding-bottom: 0; }
     .card-header {
       display: flex;
       align-items: baseline;
@@ -438,29 +439,45 @@
 
     /* ── Quick nav ── */
     .quick-nav {
-      display: flex;
-      gap: 0.35rem;
-      margin-bottom: 2.5rem;
-      overflow-x: auto;
-      padding-bottom: 0.25rem;
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: 0;
+      margin: 0;
+      border-top: 1px solid var(--border);
     }
     .quick-nav a {
-      padding: 0.55rem 1rem;
-      min-height: 36px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--bg-card);
-      color: var(--fg-muted);
-      font-size: 0.6875rem;
+      padding: 0.7rem 0.5rem;
+      min-height: 44px;
+      border: none;
+      border-right: 1px solid var(--border);
+      border-radius: 0;
+      background: var(--bg-elevated);
+      color: var(--fg);
+      font-size: 0.8125rem;
       font-weight: 600;
-      letter-spacing: 0.04em;
+      letter-spacing: 0;
       text-decoration: none;
       white-space: nowrap;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      transition: background 0.2s, color 0.2s;
       display: flex;
       align-items: center;
+      justify-content: center;
+      text-align: center;
     }
-    .quick-nav a:hover { background: var(--lotte-red); color: #FFFFFF; border-color: var(--lotte-red); }
+    .quick-nav a:last-child { border-right: none; }
+    .quick-nav a:hover { background: var(--lotte-red); color: #FFFFFF; }
+    @media (max-width: 900px) {
+      .quick-nav {
+        display: flex;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .quick-nav a {
+        flex: 1 0 auto;
+        min-width: 5.5rem;
+        padding: 0.7rem 0.85rem;
+      }
+    }
 
     .dash-section {
       margin-bottom: 3.5rem;
@@ -735,7 +752,7 @@
     <div class="section-label"><span class="num">01-C.</span> This Week</div>
     <h2 class="section-heading">이번 주 구매 판단 체크리스트</h2>
     <div class="section-block">
-      <div class="card">
+      <div class="card card-with-nav">
         <div style="overflow-x:auto;">
           <table class="data-table" id="weeklyDecisionsTable">
             <thead>
@@ -744,11 +761,10 @@
             <tbody></tbody>
           </table>
         </div>
+        <nav class="quick-nav" id="quickNav" aria-label="섹션 바로가기"></nav>
       </div>
     </div>
   </section>
-
-  <nav class="quick-nav" id="quickNav" aria-label="섹션 바로가기"></nav>
 
   <section id="sec-fx" class="dash-section">
     <div class="section-label"><span class="num">02.</span> Foreign Exchange</div>
