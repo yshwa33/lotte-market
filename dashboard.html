@@ -267,14 +267,18 @@
 
       /* ── Section BACK button ── */
       #top-nav { scroll-margin-top: 5.5rem; }
-      .section-top {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        align-items: start;
-        gap: 0.75rem 1.5rem;
-        margin-bottom: 1.25rem;
+      .section-block-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 0.85rem 1.75rem 1.25rem;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border);
       }
-      .section-top-main .section-heading { margin-bottom: 0; }
+      .section-block.grid-2 .section-block-footer,
+      .section-block.grid-3 .section-block-footer {
+        grid-column: 1 / -1;
+      }
       .section-back {
         display: inline-flex;
         align-items: center;
@@ -282,17 +286,15 @@
         gap: 0.25rem;
         min-width: 4.75rem;
         padding: 0.45rem 0.75rem;
-        margin-top: 0.2rem;
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        background: var(--bg-card);
+        background: var(--bg-elevated);
         color: var(--lotte-grey);
         font-size: 0.625rem;
         font-weight: 700;
         letter-spacing: 0.14em;
         text-decoration: none;
         white-space: nowrap;
-        box-shadow: var(--shadow);
         transition: background 0.2s, color 0.2s, border-color 0.2s;
       }
       .section-back:hover {
@@ -305,7 +307,7 @@
         outline-offset: 2px;
       }
       @media (max-width: 600px) {
-        .section-top { gap: 0.5rem 0.85rem; }
+        .section-block-footer { padding: 0.75rem 1rem 1rem; }
         .section-back { min-width: 4.25rem; padding: 0.4rem 0.6rem; }
       }
 
@@ -1168,13 +1170,25 @@
   function initSectionBackButtons() {
     SECTIONS.forEach(s => {
       const sec = document.getElementById('sec-' + s.id);
-      if (!sec || sec.querySelector('.section-back')) return;
-      const label = sec.querySelector('.section-label');
-      const heading = sec.querySelector('.section-heading');
-      if (!label || !heading) return;
+      if (!sec) return;
 
-      const top = document.createElement('div');
-      top.className = 'section-top';
+      const oldTop = sec.querySelector('.section-top');
+      if (oldTop) {
+        const main = oldTop.querySelector('.section-top-main');
+        if (main) {
+          const label = main.querySelector('.section-label');
+          const heading = main.querySelector('.section-heading');
+          if (label) sec.insertBefore(label, sec.firstChild);
+          if (heading) sec.insertBefore(heading, label ? label.nextSibling : sec.firstChild);
+        }
+        oldTop.remove();
+      }
+
+      const block = sec.querySelector('.section-block');
+      if (!block || block.querySelector('.section-back')) return;
+
+      const footer = document.createElement('div');
+      footer.className = 'section-block-footer';
 
       const back = document.createElement('a');
       back.href = '#top-nav';
@@ -1186,14 +1200,8 @@
         scrollToTopNav();
       });
 
-      const main = document.createElement('div');
-      main.className = 'section-top-main';
-      main.appendChild(label);
-      main.appendChild(heading);
-
-      top.appendChild(back);
-      top.appendChild(main);
-      sec.insertBefore(top, sec.firstChild);
+      footer.appendChild(back);
+      block.appendChild(footer);
     });
   }
 
