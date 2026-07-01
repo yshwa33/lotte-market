@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="LOTTE">
+  <!-- op CI Red #DA291C · 0½ ,… -->
+  <rect x="30" y="30" width="140" height="140" rx="28" transform="rotate(45 100 100)" fill="#DA291C"/>
+  <g fill="#FFFFFF">
+    <circle cx="67" cy="136" r="7"/>
+    <path
+      d="M73 130
+         C84 116 92 90 96 66
+         C98 50 108 44 119 49
+         C131 55 134 71 129 89
+         C124 109 109 126 91 134
+         C104 129 117 116 125 100"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="12"
+      stroke-linecap="round"
+      stroke-linejoin="round"/>
+  </g>
+</svg>
