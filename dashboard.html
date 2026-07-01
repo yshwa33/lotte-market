@@ -1,0 +1,1396 @@
+  <!DOCTYPE html>
+  <html lang="ko">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="롯데호텔 구매팀 시장동향 대시보드 — 환율·유가·물류·원자재·식자재 실시간 모니터링">
+    <title>구매팀 시장동향 대시보드 | 롯데호텔</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <style>
+      /* ── LOTTE CI Theme ── */
+      :root {
+        --lotte-red: #DA291C;
+        --lotte-red-dark: #B82218;
+        --lotte-grey: #54585A;
+        --lotte-black: #000000;
+        --lotte-silver: #8A8D8F;
+        --lotte-gold: #877669;
+        --bg: #F5F5F5;
+        --bg-elevated: #FAFAFA;
+        --bg-card: #FFFFFF;
+        --fg: #000000;
+        --fg-muted: #54585A;
+        --gold: #877669;
+        --gold-light: #A08F7F;
+        --gold-dark: #6E5F52;
+        --navy: #000000;
+        --muted: #EEEEEE;
+        --accent: #DA291C;
+        --border: rgba(84, 88, 90, 0.18);
+        --border-strong: rgba(218, 41, 28, 0.35);
+        --danger: #DA291C;
+        --success: #2E7D5A;
+        --font: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-display: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+        --radius: 6px;
+        --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: var(--font);
+        font-size: 0.9375rem;
+        font-weight: 400;
+        background: var(--bg);
+        background-image: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%);
+        color: var(--fg);
+        line-height: 1.65;
+        min-height: 100vh;
+        text-align: left;
+      }
+
+      .swiss-grid-pattern {
+        background-image:
+          linear-gradient(rgba(84, 88, 90, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(84, 88, 90, 0.04) 1px, transparent 1px);
+        background-size: 32px 32px;
+      }
+      .swiss-dots {
+        background-image: radial-gradient(rgba(218, 41, 28, 0.06) 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+
+      h1, h2, h3, h4, .section-heading, .hero-title {
+        font-family: var(--font-display);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--fg);
+      }
+
+      .card-title {
+        font-family: var(--font);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--lotte-grey);
+        font-size: 0.75rem;
+      }
+
+      .mono { font-family: var(--font); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--fg); }
+
+      /* ── Header ── */
+      .header {
+        background: #FFFFFF;
+        border-bottom: 3px solid var(--lotte-red);
+        padding: 1rem 2rem;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+      .header-inner {
+        max-width: 80rem;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 2rem;
+      }
+      @media (max-width: 768px) {
+        .header-inner { grid-template-columns: 1fr; }
+        .header { padding: 1rem; }
+        .lotte-logo { height: 36px; }
+        .logo-area { gap: 0.85rem; }
+        .logo-area h1 { font-size: 1.35rem; }
+      }
+      .logo-area {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+      }
+      .lotte-logo {
+        height: 48px;
+        width: auto;
+        flex-shrink: 0;
+        object-fit: contain;
+      }
+      .logo-text { min-width: 0; }
+      .logo-area .eyebrow {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--lotte-grey);
+        margin-bottom: 0.35rem;
+      }
+      .logo-area h1 {
+        font-size: clamp(1.75rem, 4vw, 2.75rem);
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        font-weight: 700;
+      }
+      .logo-area .sub {
+        font-size: 0.8125rem;
+        font-weight: 400;
+        margin-top: 0.6rem;
+        color: var(--fg-muted);
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      /* ── Buttons ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        padding: 0 1.1rem;
+        min-height: 40px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        background: var(--bg-card);
+        color: var(--navy);
+        font-family: var(--font);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
+      }
+      .btn + .btn { margin-left: 0; }
+      .btn:hover { background: var(--muted); border-color: var(--lotte-grey); color: var(--fg); }
+      .btn:focus-visible { outline: 2px solid var(--lotte-red); outline-offset: 2px; }
+      .btn-primary {
+        background: var(--lotte-red);
+        border-color: var(--lotte-red);
+        color: #FFFFFF;
+      }
+      .btn-primary:hover { background: var(--lotte-red-dark); border-color: var(--lotte-red-dark); color: #FFFFFF; }
+
+      /* ── Update banner ── */
+      .update-banner {
+        background: var(--lotte-grey);
+        border-bottom: 2px solid var(--lotte-red);
+        padding: 0.65rem 2rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .update-banner strong { color: #FFFFFF; }
+      .update-banner .live-dot {
+        width: 8px; height: 8px;
+        background: var(--lotte-red);
+        border-radius: 50%;
+        flex-shrink: 0;
+        box-shadow: 0 0 6px rgba(218, 41, 28, 0.7);
+      }
+      .countdown { color: #FFFFFF; font-weight: 700; }
+
+      /* ── Layout ── */
+      .container {
+        max-width: 80rem;
+        margin: 0 auto;
+        padding: 2.5rem 2rem 5rem;
+      }
+      .grid-2 { display: grid; grid-template-columns: 7fr 5fr; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+      .grid-2 > * { border-right: 1px solid var(--border); }
+      .grid-2 > *:last-child { border-right: none; }
+      .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--border); }
+      .grid-3 > * { border-right: 1px solid var(--border); padding: 1.5rem; }
+      .grid-3 > *:last-child { border-right: none; }
+      @media (max-width: 900px) {
+        .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        .grid-2 > *, .grid-3 > * { border-right: none; border-bottom: 1px solid var(--border); }
+        .grid-2 > *:last-child, .grid-3 > *:last-child { border-bottom: none; }
+        .container { padding: 2rem 1rem 4rem; }
+      }
+
+      /* ── Cards ── */
+      .card {
+        background: var(--bg-card);
+        border: none;
+        padding: 1.75rem;
+        transition: background 0.2s;
+      }
+      .card.muted-bg { background: var(--bg-elevated); }
+      .card-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.85rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .card-badge {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        padding: 0.2rem 0.6rem;
+        border: 1px solid var(--lotte-red);
+        border-radius: var(--radius);
+        color: var(--lotte-red);
+        background: rgba(218, 41, 28, 0.06);
+      }
+
+      .section-label {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--lotte-grey);
+      }
+      .section-label .num { color: var(--lotte-red); font-weight: 800; }
+
+      .section-heading {
+        font-size: clamp(1.35rem, 3vw, 2rem);
+        margin-bottom: 1.25rem;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+        color: var(--fg);
+      }
+
+      /* ── Core messages ── */
+      .core-messages {
+        margin-bottom: 0;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        background: var(--bg-card);
+      }
+      .core-messages blockquote {
+        padding: 0.85rem 0 0.85rem 1.25rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+        border-left: 3px solid var(--lotte-red);
+        margin: 0;
+        line-height: 1.75;
+        color: var(--fg);
+      }
+      .core-messages blockquote + blockquote { margin-top: 0.25rem; }
+
+      /* ── Status grid ── */
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(9, minmax(0, 1fr));
+        gap: 0;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin-bottom: 0;
+      }
+      .status-item {
+        background: var(--bg-card);
+        border-right: 1px solid var(--border);
+        padding: 1rem 0.65rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        min-width: 0;
+      }
+      .status-item:last-child { border-right: none; }
+      .status-item:hover { background: rgba(218, 41, 28, 0.04); }
+      .status-item .val {
+        font-size: 0.875rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--fg);
+        line-height: 1.3;
+        word-break: keep-all;
+      }
+      .status-item:hover .cat, .status-item:hover .chg { color: var(--fg-muted); }
+      .status-item .emoji-status { font-size: 0.9rem; margin-bottom: 0.2rem; }
+      .status-item .emoji-cat { font-size: 1.1rem; margin-bottom: 0.3rem; }
+      .status-item .cat {
+        font-size: 0.5625rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+        margin-bottom: 0.3rem;
+      }
+      .status-item .chg {
+        font-size: 0.625rem;
+        color: var(--fg-muted);
+        margin-top: 0.2rem;
+        line-height: 1.35;
+      }
+      @media (max-width: 900px) {
+        .status-grid {
+          display: flex;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: thin;
+        }
+        .status-item {
+          flex: 0 0 7.5rem;
+          min-width: 7.5rem;
+        }
+      }
+
+      /* ── KPI ── */
+      .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.25rem; }
+      .kpi {
+        padding: 1rem;
+        text-align: left;
+        border-right: 1px solid var(--border);
+        background: var(--bg-elevated);
+      }
+      .kpi:last-child { border-right: none; }
+      .kpi .label {
+        font-size: 0.625rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+      }
+      .kpi .delta { font-size: 0.75rem; font-weight: 400; margin-top: 0.2rem; color: var(--fg-muted); }
+
+      .kpi .value { font-size: 1.35rem; font-weight: 800; margin-top: 0.25rem; letter-spacing: -0.02em; color: var(--fg); }
+      .delta.up { color: var(--danger); }
+      .delta.down { color: var(--success); }
+
+      /* ── Procurement panels ── */
+      .proc-summary {
+        font-size: 0.9rem;
+        line-height: 1.75;
+        color: var(--fg);
+        margin-bottom: 1.25rem;
+        padding: 1rem 1.25rem;
+        background: var(--bg-elevated);
+        border-radius: var(--radius);
+        border-left: 3px solid var(--lotte-gold);
+      }
+      .hedge-box {
+        padding: 1rem;
+        background: var(--bg-elevated);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        margin-bottom: 0.75rem;
+      }
+      .hedge-box strong { color: var(--lotte-gold); display: block; margin-bottom: 0.35rem; font-size: 0.8rem; }
+      .hedge-box p { font-size: 0.875rem; margin: 0; color: var(--fg); }
+      .impact-up { color: var(--danger); font-weight: 600; }
+      .impact-down { color: var(--success); font-weight: 600; }
+      .impact-flat { color: var(--fg-muted); font-weight: 600; }
+      .decision-row td:first-child { white-space: nowrap; }
+
+      /* ── Chart ── */
+      .chart-wrap {
+        position: relative;
+        height: 240px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem;
+        background: var(--bg-elevated);
+      }
+
+      /* ── Tables ── */
+      .data-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+      .data-table th {
+        background: var(--lotte-red);
+        color: #FFFFFF;
+        padding: 0.7rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.6875rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border-bottom: none;
+      }
+      .data-table td {
+        padding: 0.65rem 1rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+        color: var(--fg);
+        background: var(--bg-card);
+      }
+      .data-table tr:hover td { background: var(--muted); }
+
+      /* ── Analysis list ── */
+      .analysis-list { list-style: none; }
+      .analysis-list li {
+        padding: 0.7rem 0;
+        font-size: 0.875rem;
+        font-weight: 400;
+        border-bottom: 1px solid var(--border);
+        padding-left: 1rem;
+        border-left: 2px solid transparent;
+        color: var(--fg);
+        transition: border-color 0.2s;
+      }
+      .analysis-list li:hover { border-left-color: var(--lotte-red); }
+      .analysis-list li:last-child { border-bottom: none; }
+
+      /* ── Quick nav ── */
+    .quick-nav-block {
+      margin: 1.25rem 0 2.5rem;
+      border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        background: var(--bg-card);
+      }
+      .quick-nav {
+        display: grid;
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+        gap: 0;
+        margin: 0;
+      }
+      .quick-nav a {
+        padding: 0.65rem 0.5rem;
+        min-height: 0;
+        border: none;
+        border-right: 1px solid var(--border);
+        border-radius: 0;
+        background: var(--bg-card);
+        color: var(--fg);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background 0.2s, color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        line-height: 1.5;
+      }
+      .quick-nav a:last-child { border-right: none; }
+      .quick-nav a:hover { background: var(--lotte-red); color: #FFFFFF; }
+      @media (max-width: 900px) {
+        .quick-nav {
+          display: flex;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+        .quick-nav a {
+          flex: 1 0 auto;
+          min-width: 5.5rem;
+          padding: 0.7rem 0.85rem;
+        }
+      }
+
+      .dash-section {
+        margin-bottom: 3.5rem;
+        scroll-margin-top: 5rem;
+      }
+      .dash-section .section-block {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      /* ── Action plan ── */
+      .plan-col h4 {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--lotte-gold);
+        margin-bottom: 0.85rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+        font-family: var(--font);
+      }
+      .plan-col ul { list-style: none; }
+      .plan-col li {
+        font-size: 0.8125rem;
+        padding: 0.45rem 0;
+        border-bottom: 1px solid var(--border);
+        color: var(--fg);
+      }
+      .plan-col li::before { content: '◆ '; color: var(--lotte-red); font-size: 0.5rem; vertical-align: middle; }
+
+      /* ── Share panel ── */
+      .share-panel { position: fixed; bottom: 2rem; right: 2rem; z-index: 200; }
+      .share-fab {
+        width: 52px; height: 52px;
+        border: none;
+        border-radius: 50%;
+        background: var(--lotte-red);
+        color: #FFFFFF;
+        font-size: 1.5rem;
+        font-weight: 300;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 16px rgba(218, 41, 28, 0.35);
+      }
+      .share-fab:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(218, 41, 28, 0.45); }
+      .share-fab:focus-visible { outline: 2px solid var(--lotte-gold); outline-offset: 2px; }
+      .share-menu {
+        display: none;
+        position: absolute;
+        bottom: 60px;
+        right: 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        min-width: 220px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .share-menu.open { display: block; }
+      .share-menu button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 0.8rem 1rem;
+        border: none;
+        border-bottom: 1px solid var(--border);
+        background: none;
+        color: var(--fg);
+        font-family: var(--font);
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .share-menu button:last-child { border-bottom: none; }
+      .share-menu button:hover { background: rgba(218, 41, 28, 0.06); color: var(--lotte-red); }
+
+      /* ── Footer ── */
+      .footer {
+        text-align: left;
+        padding: 2.5rem 2rem;
+        font-size: 0.75rem;
+        font-weight: 400;
+        border-top: 3px solid var(--lotte-red);
+        background: var(--lotte-black);
+        color: rgba(255, 255, 255, 0.75);
+      }
+      .footer-sources strong { color: var(--lotte-gold); }
+
+      .footer-inner { max-width: 80rem; margin: 0 auto; }
+      .footer-sources {
+        margin-top: 1.25rem;
+        font-size: 0.75rem;
+        line-height: 1.7;
+        border-top: 1px solid rgba(255, 252, 248, 0.15);
+        padding-top: 1.25rem;
+      }
+
+      /* ── Toast ── */
+      .toast {
+        position: fixed;
+        bottom: 5rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(12px);
+        background: var(--lotte-grey);
+        color: #FFFFFF;
+        border: 1px solid var(--lotte-red);
+        border-radius: var(--radius);
+        padding: 0.75rem 1.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        opacity: 0;
+        transition: opacity 0.2s, transform 0.2s;
+        z-index: 300;
+        pointer-events: none;
+        box-shadow: var(--shadow);
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+      /* ── Section nav ── */
+      .section-nav {
+        position: fixed;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: var(--shadow);
+      }
+      @media (max-width: 1200px) { .section-nav { display: none; } }
+      .section-nav a {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--lotte-silver);
+        display: block;
+        transition: background 0.2s, transform 0.2s;
+      }
+      .section-nav a:hover { background: var(--lotte-red); transform: scale(1.3); }
+
+      .risk-high { color: var(--lotte-red); font-weight: 600; }
+      .risk-mid { color: var(--lotte-gold); font-weight: 600; }
+      .risk-low { color: var(--success); font-weight: 500; }
+      .action-cell { font-weight: 700; color: var(--lotte-red); }
+
+      .load-error {
+        background: rgba(196, 92, 92, 0.1);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+        border-radius: var(--radius);
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        display: none;
+      }
+
+      .hero-strip {
+        border: none;
+        margin-bottom: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { transition: none !important; }
+      }
+
+      @media print {
+        body { background: #fff; color: #000; }
+        .header-actions, .share-panel, .section-nav, .quick-nav-block { display: none !important; }
+        .card { break-inside: avoid; background: #fff; }
+      }
+    </style>
+  </head>
+  <body>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-area">
+        <img src="assets/lotte-logo.png" alt="LOTTE" class="lotte-logo" width="120" height="48">
+        <div class="logo-text">
+          <div class="eyebrow">Lotte Hotel · Procurement Intelligence</div>
+          <h1>시장동향 대시보드</h1>
+          <div class="sub" id="dateLabel">로딩 중...</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" id="btnRefresh" title="데이터 새로고침">새로고침</button>
+        <button class="btn" onclick="window.print()">인쇄</button>
+        <a class="btn btn-primary" href="https://app.notion.com/p/3735d37746b0816f9dc7c1703af99d78" target="_blank">Notion</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="update-banner swiss-dots">
+    <span class="live-dot" aria-hidden="true"></span>
+    <span>업데이트 <strong id="lastUpdated">-</strong></span>
+    <span>다음 갱신 <span class="countdown" id="nextUpdate">-</span></span>
+    <span>주간 · 월요일 09:00</span>
+  </div>
+
+  <nav class="section-nav" id="sectionNav" aria-label="섹션 이동"></nav>
+
+  <main class="container">
+
+    <div class="load-error" id="loadError">데이터를 불러오지 못했습니다. GitHub에 market_data.json 파일을 업로드해 주세요.</div>
+
+    <div class="hero-strip">
+    <section id="sec-core" class="card core-messages swiss-grid-pattern">
+      <div class="card-header">
+        <div>
+          <div class="section-label"><span class="num">00.</span> Key Messages</div>
+          <div class="card-title">이달의 핵심 메시지</div>
+        </div>
+        <span class="card-badge" id="dataVersion">v-</span>
+      </div>
+      <div id="coreMessages"></div>
+    </section>
+    </div>
+
+    <div class="quick-nav-block">
+      <nav class="quick-nav" id="quickNav" aria-label="섹션 바로가기"></nav>
+    </div>
+
+    <section id="sec-summary" class="dash-section">
+      <div class="section-label"><span class="num">01.</span> Market Overview</div>
+      <h2 class="section-heading">시장현황 요약</h2>
+      <div class="status-grid" id="statusGrid"></div>
+    </section>
+
+    <section id="sec-procurement" class="dash-section">
+      <div class="section-label"><span class="num">01-A.</span> Procurement Decision</div>
+      <h2 class="section-heading">구매 의사결정 스냅샷</h2>
+      <div class="section-block grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Weekly Snapshot</div>
+            <span class="card-badge" id="procOverallRisk">-</span>
+          </div>
+          <p class="proc-summary" id="procSummary"></p>
+          <div class="kpi-row" id="procKpi"></div>
+        </div>
+        <div class="card muted-bg">
+          <div class="card-header"><div class="card-title">환헤지 가이드</div></div>
+          <div id="hedgeGuidance"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-costimpact" class="dash-section">
+      <div class="section-label"><span class="num">01-B.</span> Cost Impact</div>
+      <h2 class="section-heading">카테고리별 원가 영향도</h2>
+      <div class="section-block">
+        <div class="card">
+          <div style="overflow-x:auto;">
+            <table class="data-table" id="costImpactTable">
+              <thead>
+                <tr><th>카테고리</th><th>구매비중</th><th>예상 영향</th><th>주요 요인</th><th>권고 조치</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-weekly" class="dash-section">
+      <div class="section-label"><span class="num">01-C.</span> This Week</div>
+      <h2 class="section-heading">이번 주 구매 판단 체크리스트</h2>
+      <div class="section-block">
+        <div class="card">
+          <div style="overflow-x:auto;">
+            <table class="data-table" id="weeklyDecisionsTable">
+              <thead>
+                <tr><th>우선</th><th>판단·실행 항목</th><th>기한</th><th>담당</th><th>근거</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-fx" class="dash-section">
+      <div class="section-label"><span class="num">02.</span> Foreign Exchange</div>
+      <h2 class="section-heading">환율</h2>
+      <div class="section-block grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">KPI</div></div>
+          <div class="kpi-row" id="fxKpi"></div>
+          <div class="chart-wrap swiss-grid-pattern"><canvas id="chartFx" aria-label="환율 추이 차트"></canvas></div>
+        </div>
+        <div class="card muted-bg swiss-dots">
+          <div class="card-header"><div class="card-title">Analysis</div></div>
+          <ul class="analysis-list" id="fxAnalysis"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-oil" class="dash-section">
+      <div class="section-label"><span class="num">03.</span> Energy</div>
+      <h2 class="section-heading">유가 / 에너지</h2>
+      <div class="section-block grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">International</div></div>
+          <div class="kpi-row" id="oilKpi"></div>
+          <div class="chart-wrap swiss-grid-pattern"><canvas id="chartOil"></canvas></div>
+        </div>
+        <div class="card muted-bg">
+          <div class="card-header"><div class="card-title">Domestic &amp; Analysis</div></div>
+          <table class="data-table" id="oilDomestic"></table>
+          <ul class="analysis-list" id="oilAnalysis" style="margin-top:1.5rem;"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-logistics" class="dash-section">
+      <div class="section-label"><span class="num">04.</span> Logistics</div>
+      <h2 class="section-heading">물류비 SCFI</h2>
+      <div class="section-block grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">SCFI Index</div></div>
+          <div class="kpi-row" id="logisticsKpi"></div>
+          <div class="chart-wrap swiss-grid-pattern"><canvas id="chartScfi"></canvas></div>
+        </div>
+        <div class="card muted-bg swiss-dots">
+          <div class="card-header"><div class="card-title">Routes</div></div>
+          <table class="data-table" id="routeTable"></table>
+          <ul class="analysis-list" id="logisticsAnalysis" style="margin-top:1.5rem;"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-materials" class="dash-section">
+      <div class="section-label"><span class="num">05.</span> Commodities</div>
+      <h2 class="section-heading">원자재 LME</h2>
+      <div class="section-block grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Metals KPI</div></div>
+          <div class="kpi-row" id="materialsKpi"></div>
+          <div class="chart-wrap swiss-grid-pattern"><canvas id="chartMaterials"></canvas></div>
+        </div>
+        <div class="card muted-bg">
+          <div class="card-header"><div class="card-title">Impact Matrix</div></div>
+          <table class="data-table" id="materialsTable"></table>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-food" class="dash-section">
+      <div class="section-label"><span class="num">06.</span> Food &amp; Agri</div>
+      <h2 class="section-heading">농산물 · 식자재</h2>
+      <div class="section-block grid-2">
+        <div class="card muted-bg swiss-dots">
+          <div class="card-header"><div class="card-title">KAMIS</div></div>
+          <div class="kpi-row" id="foodKpi"></div>
+          <table class="data-table" id="kamisTable"></table>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">F&amp;B Items</div></div>
+          <table class="data-table" id="fbTable"></table>
+          <ul class="analysis-list" id="foodAnalysis" style="margin-top:1.5rem;"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-beverage" class="dash-section">
+      <div class="section-label"><span class="num">07.</span> Beverage</div>
+      <h2 class="section-heading">음료 · 주류</h2>
+      <div class="section-block grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Coffee</div></div>
+          <div class="kpi-row" id="beverageKpi"></div>
+          <div class="chart-wrap swiss-grid-pattern"><canvas id="chartCoffee"></canvas></div>
+        </div>
+        <div class="card muted-bg">
+          <div class="card-header"><div class="card-title">Wine &amp; Others</div></div>
+          <p id="wineNote" style="font-size:0.9375rem;padding:0.5rem 0;line-height:1.75;font-weight:500;"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-consumables" class="dash-section">
+      <div class="section-label"><span class="num">08.</span> Utilities</div>
+      <h2 class="section-heading">소모품 · 유틸리티</h2>
+      <div class="section-block grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Consumables</div></div>
+          <table class="data-table" id="consumablesTable"></table>
+        </div>
+        <div class="card muted-bg swiss-dots">
+          <div class="card-header"><div class="card-title">Utility</div></div>
+          <div id="utilityInfo"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-geo" class="dash-section">
+      <div class="section-label"><span class="num">09.</span> Geopolitics</div>
+      <h2 class="section-heading">지정학 리스크</h2>
+      <div class="section-block">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Risk Assessment</div>
+          <span class="card-badge" id="geoRisk">-</span>
+        </div>
+        <h3 id="geoHeadline" style="font-size:1.125rem;font-weight:700;margin-bottom:1.25rem;letter-spacing:-0.02em;text-transform:none;"></h3>
+        <ul class="analysis-list" id="geoPoints"></ul>
+      </div>
+      </div>
+    </section>
+
+    <section id="sec-top7" class="dash-section">
+      <div class="section-label"><span class="num">10.</span> Priority Items</div>
+      <h2 class="section-heading">TOP 7 핵심품목</h2>
+      <div class="section-block">
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="top7Table">
+            <thead>
+              <tr><th>순위</th><th>품목</th><th>구분</th><th>영향 요인</th><th>전망</th><th>원가영향</th><th>기한</th><th>대응</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section id="sec-risk" class="dash-section">
+      <div class="section-label"><span class="num">11.</span> Action Plan</div>
+      <h2 class="section-heading">리스크 · 실행계획</h2>
+      <div class="section-block grid-2">
+        <div class="card muted-bg">
+          <div class="card-header"><div class="card-title">Risk Matrix</div></div>
+          <table class="data-table" id="riskTable">
+            <thead><tr><th>리스크</th><th>발생가능성</th><th>영향도</th><th>수준</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Action Plan</div></div>
+          <div class="grid-3" id="actionPlan"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer swiss-dots">
+    <div class="footer-inner">
+      <span id="footerDate"></span> — 롯데호텔 경영지원부문 구매팀 · 내부 의사결정 용도 · 대외 유출 금지
+      <p class="footer-sources"><strong>Sources</strong> — <span id="sourcesList"></span></p>
+    </div>
+  </footer>
+
+  <div class="share-panel">
+    <div class="share-menu" id="shareMenu">
+      <button onclick="copyDashboardLink()">Copy Link</button>
+      <button onclick="copyTeamsMessage()">Teams Message</button>
+      <button onclick="copyEmailDigest()">Email Digest</button>
+    </div>
+    <button class="share-fab" id="shareFab" title="공유" aria-label="공유 메뉴">+</button>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="market_data.js" charset="UTF-8"></script>
+  <script>
+  const SECTIONS = [
+    { id: 'procurement', label: '구매판단' },
+    { id: 'costimpact', label: '원가영향' },
+    { id: 'fx', label: '환율' },
+    { id: 'oil', label: '유가' },
+    { id: 'logistics', label: '물류' },
+    { id: 'materials', label: '원자재' },
+    { id: 'food', label: '식자재' },
+    { id: 'beverage', label: '음료' },
+    { id: 'consumables', label: '소모품' },
+    { id: 'geo', label: '지정학' }
+  ];
+
+  const CHART_COLORS = {
+    fx: '#54585A',
+    oil: '#DA291C',
+    scfi: '#877669',
+    materials: '#54585A',
+    coffee: '#DA291C'
+  };
+
+  let DATA = null;
+  const charts = {};
+
+  async function loadData() {
+    document.getElementById('loadError').style.display = 'none';
+    DATA = null;
+
+    try {
+      const res = await fetch('market_data.json?t=' + Date.now());
+      if (res.ok) DATA = await res.json();
+    } catch (e) { /* json 없음 → 다음 방법 시도 */ }
+
+    if (!DATA?.coreMessages && window.__MARKET_DATA__?.coreMessages) {
+      DATA = window.__MARKET_DATA__;
+    }
+
+    if (!DATA?.coreMessages) {
+      try {
+        const res = await fetch('market_data.js?t=' + Date.now());
+        if (res.ok) {
+          const text = await res.text();
+          if (text.trim().startsWith('{')) {
+            DATA = JSON.parse(text);
+          } else {
+            new Function(text)();
+            if (window.__MARKET_DATA__?.coreMessages) DATA = window.__MARKET_DATA__;
+          }
+        }
+      } catch (e) { /* js 로드 실패 */ }
+    }
+
+    if (!DATA || !DATA.coreMessages) {
+      document.getElementById('loadError').style.display = 'block';
+      throw new Error('No data available');
+    }
+    renderAll();
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function formatDate(iso) {
+    return new Date(iso).toLocaleString('ko-KR', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function updateCountdown() {
+    if (!DATA) return;
+    const next = new Date(DATA.meta.nextUpdate);
+    const diff = next - new Date();
+    const el = document.getElementById('nextUpdate');
+    if (diff <= 0) {
+      el.textContent = '지금 AI 트리거 실행!';
+      el.style.color = 'var(--accent)';
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    el.textContent = `${d}일 ${h}시간 ${m}분 후`;
+  }
+
+  function chartDefaults() {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          grid: { color: 'rgba(84, 88, 90, 0.12)' },
+          ticks: { color: '#54585A', font: { family: 'Noto Sans KR', size: 10, weight: '500' } }
+        },
+        y: {
+          grid: { color: 'rgba(84, 88, 90, 0.12)' },
+          ticks: { color: '#54585A', font: { family: 'Noto Sans KR', size: 10, weight: '500' } }
+        }
+      }
+    };
+  }
+
+  function makeChart(canvasId, labels, data, label, color) {
+    if (charts[canvasId]) charts[canvasId].destroy();
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    const c = color || '#DA291C';
+    charts[canvasId] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data,
+          borderColor: c,
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          fill: false,
+          tension: 0,
+          pointRadius: 3,
+          pointBorderWidth: 2,
+          pointBorderColor: '#DA291C',
+          pointBackgroundColor: '#FFFFFF'
+        }]
+      },
+      options: chartDefaults()
+    });
+  }
+
+  function renderHeader() {
+    document.getElementById('dateLabel').textContent =
+      new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) + ' | 호텔 구매팀';
+    document.getElementById('lastUpdated').textContent = formatDate(DATA.meta.lastUpdated);
+    document.getElementById('dataVersion').textContent = 'v' + DATA.meta.version;
+    document.getElementById('footerDate').textContent =
+      '작성일: ' + formatDate(DATA.meta.lastUpdated).split(' ').slice(0, 3).join(' ');
+    updateCountdown();
+  }
+
+  function renderCoreMessages() {
+    document.getElementById('coreMessages').innerHTML =
+      DATA.coreMessages.map(m => `<blockquote>${m}</blockquote>`).join('');
+  }
+
+  function scrollToSection(id) {
+    const el = document.getElementById('sec-' + id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderStatusGrid() {
+    const tabMap = { '환율':'fx','유가':'oil','물류비':'logistics','물류':'logistics','원자재':'materials','농산물':'food','F&B':'beverage','소모품':'consumables','유틸리티':'consumables','지정학':'geo' };
+    document.getElementById('statusGrid').innerHTML = DATA.marketStatus.map(s => {
+      const sec = tabMap[s.category] || 'fx';
+      return `<div class="status-item" onclick="scrollToSection('${sec}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')scrollToSection('${sec}')">
+        <div class="emoji-status">${s.status}</div>
+        <div class="emoji-cat">${s.icon}</div>
+        <div class="cat">${s.category}</div>
+        <div class="val">${s.value}</div>
+        <div class="chg">${s.change}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderQuickNav() {
+    document.getElementById('quickNav').innerHTML = SECTIONS.map(s =>
+      `<a href="#sec-${s.id}">${s.label}</a>`
+    ).join('');
+    document.getElementById('sectionNav').innerHTML =
+      ['sec-core','sec-summary','sec-procurement','sec-costimpact','sec-fx','sec-top7','sec-risk']
+        .map(id => `<a href="#${id}" aria-label="${id}"></a>`).join('');
+  }
+
+  function impactClass(dir) {
+    if (dir === 'up') return 'impact-up';
+    if (dir === 'down') return 'impact-down';
+    return 'impact-flat';
+  }
+
+  function renderProcurement() {
+    const p = DATA.procurementSnapshot;
+    const h = DATA.hedgeGuidance;
+    if (!p) return;
+    document.getElementById('procOverallRisk').textContent = p.overallRisk + ' 종합';
+    document.getElementById('procSummary').textContent = p.summary;
+    document.getElementById('procKpi').innerHTML = p.kpis.map(k => `
+      <div class="kpi">
+        <div class="label">${k.label}</div>
+        <div class="value mono">${k.value}</div>
+        <div class="delta">${k.note}</div>
+      </div>`).join('');
+    if (h) {
+      document.getElementById('hedgeGuidance').innerHTML = `
+        <div class="hedge-box"><strong>기본 권고</strong><p>${h.recommendation}</p></div>
+        <div class="hedge-box"><strong>상승 시 (원화 약세)</strong><p>${h.triggerUp}</p></div>
+        <div class="hedge-box"><strong>하락 시 (원화 강세)</strong><p>${h.triggerDown}</p></div>
+        <ul class="analysis-list">${(h.notes || []).map(n => `<li>${n}</li>`).join('')}</ul>`;
+    }
+  }
+
+  function renderCostImpact() {
+    if (!DATA.costImpact) return;
+    document.querySelector('#costImpactTable tbody').innerHTML = DATA.costImpact.map(c => `
+      <tr>
+        <td><strong>${c.category}</strong></td>
+        <td class="mono">${c.share}</td>
+        <td class="${impactClass(c.direction)}">${c.impact}</td>
+        <td>${c.driver}</td>
+        <td class="action-cell">${c.action}</td>
+      </tr>`).join('');
+  }
+
+  function renderWeeklyDecisions() {
+    if (!DATA.weeklyDecisions) return;
+    document.querySelector('#weeklyDecisionsTable tbody').innerHTML = DATA.weeklyDecisions.map(d => `
+      <tr class="decision-row">
+        <td>${d.priority}</td>
+        <td><strong>${d.task}</strong></td>
+        <td class="mono">${d.deadline}</td>
+        <td>${d.owner}</td>
+        <td>${d.rationale}</td>
+      </tr>`).join('');
+  }
+
+  function renderKpi(id, items) {
+    document.getElementById(id).innerHTML = items.map(k => `
+      <div class="kpi">
+        <div class="label">${k.label}</div>
+        <div class="value mono">${k.value}</div>
+        ${k.delta ? `<div class="delta ${k.deltaClass || ''}">${k.delta}</div>` : ''}
+      </div>`).join('');
+  }
+
+  function renderAnalysis(id, items) {
+    document.getElementById(id).innerHTML = items.map(a => `<li>${a}</li>`).join('');
+  }
+
+  function renderFx() {
+    const f = DATA.fx;
+    renderKpi('fxKpi', [
+      { label: 'USD/KRW', value: f.kpi.usd.toLocaleString() + '원' },
+      { label: 'EUR/KRW', value: f.kpi.eur.toLocaleString() + '원' },
+      { label: 'JPY(100)', value: f.kpi.jpy.toLocaleString() + '원' },
+      { label: 'CNY/KRW', value: f.kpi.cny.toLocaleString() + '원' }
+    ]);
+    makeChart('chartFx', f.trendLabels, f.trend, '원/달러', CHART_COLORS.fx);
+    renderAnalysis('fxAnalysis', f.analysis);
+  }
+
+  function renderOil() {
+    const o = DATA.oil;
+    renderKpi('oilKpi', [
+      { label: 'WTI', value: '$' + o.kpi.wti, delta: o.kpi.change_wti + '%', deltaClass: 'down' },
+      { label: 'Brent', value: '$' + o.kpi.brent, delta: o.kpi.change_brent + '%', deltaClass: 'down' }
+    ]);
+    makeChart('chartOil', o.trendLabels, o.trend, 'WTI', CHART_COLORS.oil);
+    document.getElementById('oilDomestic').innerHTML = `
+      <thead><tr><th>품목</th><th>가격</th><th>비고</th></tr></thead>
+      <tbody>${o.domestic.map(d => `<tr><td>${d.item}</td><td class="mono">${d.price}</td><td>${d.note}</td></tr>`).join('')}</tbody>`;
+    renderAnalysis('oilAnalysis', o.analysis);
+  }
+
+  function renderLogistics() {
+    const l = DATA.logistics;
+    renderKpi('logisticsKpi', [
+      { label: 'SCFI', value: l.scfi.toLocaleString(), delta: '+' + l.scfiChange + '%', deltaClass: 'up' },
+      { label: '추세', value: '9주 연속 ↑', delta: '2024.8 이후 최고', deltaClass: 'up' }
+    ]);
+    makeChart('chartScfi', l.scfiTrendLabels, l.scfiTrend, 'SCFI', CHART_COLORS.scfi);
+    document.getElementById('routeTable').innerHTML = `
+      <thead><tr><th>노선</th><th>단위</th><th>운임($)</th><th>전주대비</th></tr></thead>
+      <tbody>${l.routes.map(r => `<tr>
+        <td>${r.route}</td><td>${r.unit}</td>
+        <td class="mono">${r.price.toLocaleString()}</td>
+        <td class="${r.change > 0 ? 'risk-high' : 'risk-low'}">${r.change > 0 ? '+' : ''}${r.change}%</td>
+      </tr>`).join('')}</tbody>`;
+    renderAnalysis('logisticsAnalysis', l.analysis);
+  }
+
+  function renderMaterials() {
+    const m = DATA.materials;
+    renderKpi('materialsKpi', [
+      { label: '구리', value: '$' + m.kpi.copper.toLocaleString() },
+      { label: '알루미늄', value: '$' + m.kpi.aluminum.toLocaleString() },
+      { label: '아연', value: '$' + m.kpi.zinc.toLocaleString() },
+      { label: '니켈', value: '$' + m.kpi.nickel.toLocaleString() }
+    ]);
+    makeChart('chartMaterials', m.trendLabels, m.trend, '구리', CHART_COLORS.materials);
+    document.getElementById('materialsTable').innerHTML = `
+      <thead><tr><th>금속</th><th>가격</th><th>영향</th><th>전망</th></tr></thead>
+      <tbody>${m.items.map(i => `<tr><td>${i.metal}</td><td class="mono">${i.price}</td><td>${i.impact}</td><td>${i.outlook}</td></tr>`).join('')}</tbody>`;
+  }
+
+  function renderFood() {
+    const f = DATA.food;
+    renderKpi('foodKpi', [
+      { label: '소비자물가', value: f.cpi.value + '%', delta: f.cpi.period },
+      { label: '데이터', value: 'KAMIS', delta: '가락시장 연동' }
+    ]);
+    document.getElementById('kamisTable').innerHTML = `
+      <thead><tr><th>품목</th><th>가격</th><th>단위</th><th>시장</th><th>일자</th><th>추세</th></tr></thead>
+      <tbody>${f.kamis.map(k => `<tr><td>${k.item}</td><td class="mono">${k.price}</td><td>${k.unit}</td><td>${k.market}</td><td>${k.date}</td><td>${k.trend}</td></tr>`).join('')}</tbody>`;
+    document.getElementById('fbTable').innerHTML = `
+      <thead><tr><th>품목</th><th>전년</th><th>전월</th><th>현재</th><th>단위</th><th>추세</th></tr></thead>
+      <tbody>${DATA.fbItems.map(fb => `<tr><td>${fb.item}</td><td class="mono">${fb.prev_year}</td><td class="mono">${fb.prev_month}</td><td class="mono">${fb.current}</td><td>${fb.unit}</td><td>${fb.trend}</td></tr>`).join('')}</tbody>`;
+    renderAnalysis('foodAnalysis', f.analysis);
+  }
+
+  function renderBeverage() {
+    const b = DATA.beverage;
+    renderKpi('beverageKpi', [
+      { label: '아라비카', value: b.coffee.price + ' ¢/lb', delta: '+' + b.coffee.change + '%', deltaClass: 'up' },
+      { label: '상태', value: '4.5개월 최고', delta: b.coffee.note }
+    ]);
+    makeChart('chartCoffee', b.coffeeTrendLabels, b.coffeeTrend, '아라비카', CHART_COLORS.coffee);
+    document.getElementById('wineNote').textContent = b.wine.note;
+  }
+
+  function renderConsumables() {
+    document.getElementById('consumablesTable').innerHTML = `
+      <thead><tr><th>원료</th><th>추세</th><th>비고</th></tr></thead>
+      <tbody>${DATA.consumables.items.map(c => `<tr><td>${c.material}</td><td>${c.trend}</td><td>${c.note}</td></tr>`).join('')}</tbody>`;
+    const u = DATA.utility;
+    document.getElementById('utilityInfo').innerHTML = `
+      <div class="kpi-row">
+        <div class="kpi"><div class="label">전기요금</div><div class="value" style="font-size:1rem;">${u.electricity.status}</div><div class="delta">${u.electricity.note}</div></div>
+        <div class="kpi"><div class="label">도시가스</div><div class="value" style="font-size:0.9rem;">${u.gas.residential}</div><div class="delta">${u.gas.note}</div></div>
+        <div class="kpi"><div class="label">석유최고가</div><div class="value" style="font-size:1rem;">${u.oil_cap.change}</div><div class="delta">${u.oil_cap.note}</div></div>
+      </div>`;
+  }
+
+  function renderGeo() {
+    const g = DATA.geo;
+    document.getElementById('geoRisk').textContent = g.risk + ' 주의';
+    document.getElementById('geoHeadline').textContent = g.headline;
+    renderAnalysis('geoPoints', g.points);
+  }
+
+  function renderTop7() {
+    document.querySelector('#top7Table tbody').innerHTML = DATA.top7.map(t => `
+      <tr>
+        <td>${t.status} ${t.rank}</td>
+        <td><strong>${t.item}</strong></td>
+        <td>${t.category}</td>
+        <td>${t.factor}</td>
+        <td>${t.outlook}</td>
+        <td class="${t.costImpact && t.costImpact.includes('+') ? 'impact-up' : t.costImpact && t.costImpact.includes('-') ? 'impact-down' : 'impact-flat'}">${t.costImpact || '-'}</td>
+        <td class="mono">${t.deadline || '-'}</td>
+        <td class="action-cell">${t.action}</td>
+      </tr>`).join('');
+  }
+
+  function renderRisk() {
+    document.querySelector('#riskTable tbody').innerHTML = DATA.riskMatrix.map(r => `
+      <tr><td>${r.risk}</td><td>${r.probability}</td><td>${r.impact}</td><td>${r.level}</td></tr>`).join('');
+    const ap = DATA.actionPlan;
+    document.getElementById('actionPlan').innerHTML = `
+      <div class="plan-col"><h4>단기 (1~3M)</h4><ul>${ap.short.map(s => `<li>${s}</li>`).join('')}</ul></div>
+      <div class="plan-col"><h4>중기 (3~6M)</h4><ul>${ap.mid.map(s => `<li>${s}</li>`).join('')}</ul></div>
+      <div class="plan-col"><h4>장기 (6M+)</h4><ul>${ap.long.map(s => `<li>${s}</li>`).join('')}</ul></div>`;
+  }
+
+  function renderSources() {
+    document.getElementById('sourcesList').textContent = DATA.sources.join(' · ');
+  }
+
+  function renderAll() {
+    renderHeader();
+    renderCoreMessages();
+    renderStatusGrid();
+    renderProcurement();
+    renderCostImpact();
+    renderWeeklyDecisions();
+    renderQuickNav();
+    renderFx(); renderOil(); renderLogistics(); renderMaterials();
+    renderFood(); renderBeverage(); renderConsumables(); renderGeo();
+    renderTop7(); renderRisk(); renderSources();
+    const seen = localStorage.getItem('dashboard_version');
+    if (seen !== DATA.meta.version) {
+      showToast('새 시장 데이터가 반영됐어요!');
+      localStorage.setItem('dashboard_version', DATA.meta.version);
+    }
+  }
+
+  function copyDashboardLink() {
+    navigator.clipboard.writeText(window.location.href);
+    showToast('링크 복사 완료!');
+  }
+  function copyTeamsMessage() {
+    const text = `📊 [구매팀 시장동향 주간 브리핑]\n${new Date().toLocaleDateString('ko-KR')}\n\n${DATA.coreMessages.join('\n')}\n\n🔗 ${window.location.href}`;
+    navigator.clipboard.writeText(text);
+    showToast('Teams 메시지 복사 완료!');
+  }
+  function copyEmailDigest() {
+    const status = DATA.marketStatus.map(s => `${s.status} ${s.category}: ${s.value}`).join('\n');
+    const text = `[구매팀] 시장동향 주간 요약 (${DATA.meta.version})\n\n${DATA.coreMessages.join('\n')}\n\n${status}\n\n${window.location.href}`;
+    navigator.clipboard.writeText(text);
+    showToast('이메일 요약 복사 완료!');
+  }
+
+  document.getElementById('shareFab').addEventListener('click', () => {
+    document.getElementById('shareMenu').classList.toggle('open');
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.share-panel')) document.getElementById('shareMenu').classList.remove('open');
+  });
+  document.getElementById('btnRefresh').addEventListener('click', () => {
+    Object.values(charts).forEach(c => c.destroy());
+    loadData().then(() => showToast('데이터 새로고침 완료!'));
+  });
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      await loadData();
+    } catch (e) {
+      console.error(e);
+    }
+    setInterval(() => { if (DATA) updateCountdown(); }, 60000);
+    setInterval(() => {
+      if (DATA && new Date() > new Date(DATA.meta.nextUpdate)) {
+        showToast('주간 업데이트 시점입니다!');
+      }
+    }, 3600000);
+  });
+  </script>
+
+  </body>
+  </html>
