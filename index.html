@@ -225,7 +225,6 @@
       transition: background 0.2s;
     }
     .card.muted-bg { background: var(--bg-elevated); }
-    .card-with-nav { padding-bottom: 0; }
     .card-header {
       display: flex;
       align-items: baseline;
@@ -438,20 +437,27 @@
     .analysis-list li:last-child { border-bottom: none; }
 
     /* ── Quick nav ── */
+    .quick-nav-block {
+      margin-top: 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: var(--bg-card);
+    }
     .quick-nav {
       display: grid;
       grid-template-columns: repeat(10, minmax(0, 1fr));
       gap: 0;
       margin: 0;
-      border-top: 1px solid var(--border);
     }
     .quick-nav a {
-      padding: 0.7rem 0.5rem;
-      min-height: 44px;
+      padding: 0.65rem 0.5rem;
+      min-height: 0;
       border: none;
       border-right: 1px solid var(--border);
       border-radius: 0;
-      background: var(--bg-elevated);
+      background: var(--bg-card);
       color: var(--fg);
       font-size: 0.8125rem;
       font-weight: 600;
@@ -463,6 +469,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
+      line-height: 1.5;
     }
     .quick-nav a:last-child { border-right: none; }
     .quick-nav a:hover { background: var(--lotte-red); color: #FFFFFF; }
@@ -752,7 +759,7 @@
     <div class="section-label"><span class="num">01-C.</span> This Week</div>
     <h2 class="section-heading">이번 주 구매 판단 체크리스트</h2>
     <div class="section-block">
-      <div class="card card-with-nav">
+      <div class="card">
         <div style="overflow-x:auto;">
           <table class="data-table" id="weeklyDecisionsTable">
             <thead>
@@ -761,8 +768,10 @@
             <tbody></tbody>
           </table>
         </div>
-        <nav class="quick-nav" id="quickNav" aria-label="섹션 바로가기"></nav>
       </div>
+    </div>
+    <div class="quick-nav-block">
+      <nav class="quick-nav" id="quickNav" aria-label="섹션 바로가기"></nav>
     </div>
   </section>
 
